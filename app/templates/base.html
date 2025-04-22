@@ -1,124 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}TerraFusion Platform{% endblock %}</title>
-    
-    <!-- Bootstrap CSS from Replit CDN -->
-    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
-    
-    <!-- MapLibre GL JS -->
-    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
-    <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
-    
-    <!-- Feather Icons -->
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/css/custom.css">
-    
-    {% block head %}{% endblock %}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    {% block head_extras %}{% endblock %}
 </head>
 <body>
-    <div class="app-container">
-        <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="/">
-                    <div class="navbar-brand-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-hexagon" viewBox="0 0 16 16">
-                            <path d="M14 4.577v6.846L8 15l-6-3.577V4.577L8 1l6 3.577zM8.5.134a1 1 0 0 0-1 0l-6 3.577a1 1 0 0 0-.5.866v6.846a1 1 0 0 0 .5.866l6 3.577a1 1 0 0 0 1 0l6-3.577a1 1 0 0 0 .5-.866V4.577a1 1 0 0 0-.5-.866L8.5.134z"/>
-                        </svg>
-                    </div>
-                    TerraFusion
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/map">Map</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/analytics">Analytics</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/audit">Audit</a>
-                        </li>
-                        <li class="nav-item auth-required d-none">
-                            <a class="nav-link" href="/etl">Data Sync</a>
-                        </li>
-                    </ul>
-                    
-                    <!-- Search Form -->
-                    <form id="search-form" class="d-flex me-2">
-                        <div class="input-group">
-                            <input id="search-input" class="form-control" type="search" placeholder="Search..." aria-label="Search">
-                            <button class="btn btn-outline-light" type="submit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </form>
-                    
-                    <!-- Authentication Controls -->
-                    <div class="auth-not-required">
-                        <a href="/login" class="btn btn-outline-light">Login</a>
-                    </div>
-                    <div class="auth-required d-none">
-                        <div class="dropdown">
-                            <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span id="user-name">User</span>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="/profile">Profile</a></li>
-                                <li><a class="dropdown-item" href="/settings">Settings</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><button class="dropdown-item" id="logout-btn">Logout</button></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+    {% if request.path != '/login' %}
+    <!-- Sidebar Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-start" style="width: 250px; height: 100vh; position: fixed;">
+        <div class="container-fluid flex-column align-items-start p-0">
+            <a class="navbar-brand d-flex align-items-center p-3" href="/">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-hexagon me-2" viewBox="0 0 16 16">
+                    <path d="M14 4.577v6.846L8 15l-6-3.577V4.577L8 1l6 3.577zM8.5.134a1 1 0 0 0-1 0l-6 3.577a1 1 0 0 0-.5.866v6.846a1 1 0 0 0 .5.866l6 3.577a1 1 0 0 0 1 0l6-3.577a1 1 0 0 0 .5-.866V4.577a1 1 0 0 0-.5-.866L8.5.134z"/>
+                </svg>
+                TerraFusion
+            </a>
+            
+            <button class="navbar-toggler m-2" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="sidebarMenu">
+                <ul class="navbar-nav flex-column w-100">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/map' %}active{% endif %}" href="/map">Maps</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/flow' %}active{% endif %}" href="/flow">Data Flows</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/insight' %}active{% endif %}" href="/insight">Insights</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/audit' %}active{% endif %}" href="/audit">Audit & Corrections</a>
+                    </li>
+                    <li class="nav-item mt-3">
+                        <a class="nav-link" href="/login">Sign Out</a>
+                    </li>
+                </ul>
             </div>
-        </nav>
-        
-        <!-- Message Container for notifications -->
-        <div id="message-container"></div>
-        
-        <!-- Main Content -->
-        <div class="content-wrapper">
-            {% block content %}{% endblock %}
         </div>
-        
-        <!-- Footer -->
-        <footer class="footer py-3 bg-light mt-auto">
-            <div class="container">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="text-muted">© 2023 TerraFusion Platform</span>
-                    <span class="text-muted">Version 1.0.0</span>
-                </div>
-            </div>
-        </footer>
+    </nav>
+    
+    <!-- Main Content -->
+    <div style="margin-left: 250px; min-height: 100vh; padding: 1.5rem;">
+        {% block content %}{% endblock %}
     </div>
+    {% else %}
+    <!-- Login Page (No Navigation) -->
+    <div class="container mt-5">
+        {% block content %}{% endblock %}
+    </div>
+    {% endif %}
     
-    <!-- Bootstrap JS Bundle with Popper -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Custom JavaScript -->
-    <script src="/static/js/ui.js"></script>
-    
-    <!-- Initialize Icons -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            feather.replace();
-        });
-    </script>
     
     {% block scripts %}{% endblock %}
 </body>
