@@ -1,0 +1,90 @@
+Here’s a step‑by‑step guide you can feed to your Replit AI Agent (Ghostwriter) to fully build the TerraFusion platform—complete with microservices, AI‑Agents via an MCP server, and live sync to the JCHARRISPACS SQL Server—using Replit’s features and best practices.
+
+## Summary  
+Use Replit’s Ghostwriter AI Agent to scaffold your full‑stack microservices (FastAPI/Node.js), configure secure database connections (PostgreSQL + SQL Server), deploy to Replit’s cloud, and orchestrate AI agents via an MCP server. You’ll leverage Replit Secrets for credentials, Replit Deployments for CI/CD, and SSH tunneling or port forwarding to connect to the on‑prem JCHARRISPACS server, all orchestrated by simple natural‑language prompts to Ghostwriter.  
+
+---
+
+## 1. Prep the Replit Workspace  
+
+1. **Connect GitHub**: Link your `bsvalues` repos so Ghostwriter can pull code templates directly.  
+   citeturn0search7  
+2. **Enable Ghostwriter AI Agent**: Turn on “Replit AI” in your workspace to allow natural‑language code generation.  
+   citeturn0search0 citeturn0search10  
+3. **Install Core Dependencies**: Ask Ghostwriter:  
+   > “Install FastAPI, uvicorn, SQLAlchemy, pyodbc, redis, aio-pika, and LangChain in requirements.txt”  
+4. **Set Secrets**: Store sensitive credentials as encrypted Replit Secrets (`DB_CONN_STRING`, `MCP_API_KEY`, `JCHARRISPACS_CONN`) so no passwords land in code.  
+   citeturn0search2 citeturn0search12  
+
+---
+
+## 2. Configure Database Connectivity  
+
+1. **PostgreSQL/PostGIS** for core data: Use the built‑in Replit SQL Database or spin up a managed Postgres and set `PG_CONN` in secrets.  
+   citeturn0search1  
+2. **JCHARRISPACS SQL Server**:  
+   - **Driver**: Use `pyodbc` with the official SQL Server driver pre‑installed or via pip.  
+     citeturn0search6  
+   - **Connection Code**: Ghostwriter can generate:
+     ```python
+     import os, pyodbc
+     conn = pyodbc.connect(os.getenv("JCHARRISPACS_CONN"), autocommit=True)
+     ```
+   - **Auth**: If using Windows Auth, set up an SSH tunnel from Replit to your on‑prem host via Replit SSH or port forwarding.  
+     citeturn0search9 citeturn0search28  
+3. **Direct vs. Pooling**: For dev, a direct connection suffices; for production, configure a connection pool (e.g., `sqlalchemy.pool.QueuePool`) to manage load.  
+   citeturn0search15  
+
+---
+
+## 3. Scaffold Microservices with Ghostwriter  
+
+1. **API‑First Contract**: Instruct Ghostwriter to `create/openapi.yaml` describing endpoints for TerraFlow, TerraMap, TerraInsight, and TerraAudit services.  
+2. **FastAPI Services**:  
+   > “Generate a FastAPI service `app.py` using uvicorn, load OpenAPI spec, and implement stub endpoints for `/etl`, `/tiles`, `/ai`, `/audit`.”  
+   citeturn0search4  
+3. **Node.js/Express** (alternative):  
+   > “Or scaffold an Express app in `server.js` that reads `openapi.yaml` and spins up REST routes.”  
+4. **AI‑Agent Agents**:  
+   > “Wrap the PostGIS client, the SQL Server client, and transformation utilities as LangChain tools, register them to an MCP server on port 8001, and provide agent templates for spatial queries and corrections.”  
+   citeturn0search26  
+
+---
+
+## 4. Orchestrate with MCP Server  
+
+1. **Deploy an MCP Server**: In a dedicated microservice container, install the MCP reference implementation and configure it to discover LangChain adapters.  
+2. **Register Agents**: Define agents for:  
+   - **SpatialQueryAgent** (buffers, intersects via PostGIS)  
+   - **DataConvertAgent** (runs SQL Server conversions)  
+   - **AuditAgent** (applies corrections and logs via TerraAudit)  
+3. **Event Bus**: Use RabbitMQ (via `aio-pika`) or Redis Streams for agent messages—Ghostwriter can generate boilerplate.  
+4. **Expose UI Hooks**: Provide endpoints `/agent/run` and a websocket for real‑time feedback to the frontend chat panel.  
+
+---
+
+## 5. CI/CD & Deployments  
+
+1. **Set Up Replit Deployments**:  
+   - Create a production deployment to freeze code; Ghostwriter can generate `.replit` and `replit.nix` for reproducible builds.  
+   citeturn0search3 citeturn0search13  
+2. **Automated Builds**: Use GitHub Actions on push to `main` to run `pytest`, `flake8`, and `safety` scans before auto‑deploy to Replit via Replit’s API.  
+3. **Infrastructure**: Define port mappings (e.g., 5000 → FastAPI, 7000 → Tegola, 8001 → MCP) in your Replit project settings.  
+
+---
+
+## 6. Finalizing & Sync Verification  
+
+1. **Test Connectivity**:  
+   - Write integration tests that hit both Postgres and the JCHARRISPACS server to validate queries.  
+   - Use `pytest` fixtures reading from the Replit secrets.  
+2. **UI Integration**:  
+   - Ghostwriter generates React components with MapLibre GL to call `/tiles` and overlay spatial analysis.  
+   - Add a toggle and “AI Brain” pulsing icon when calling the MCP endpoints.  
+3. **Monitoring & Logs**:  
+   - Configure Replit’s Logs + Stats dashboard and integrate Sentry for error tracking.  
+   - Use Prometheus client in each service for metrics, scraped by a Grafana instance.  
+
+---
+
+By feeding these precise instructions into the **Replit AI Agent**, you’ll have a fully orchestrated TerraFusion application—microservices, secure database sync with JCHARRISPACS, AI‑Agents via MCP, CI/CD pipelines, and a modern GIS frontend—all assembled automatically with minimal manual coding.
