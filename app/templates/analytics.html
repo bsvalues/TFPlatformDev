@@ -1,0 +1,674 @@
+{% extends "base.html" %}
+
+{% block title %}TerraFusion Platform - Analytics{% endblock %}
+
+{% block head %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-3">Spatial Analytics & Insights</h1>
+            <p class="lead">
+                Access AI-powered spatial analysis and insights using our TerraInsight tools.
+            </p>
+        </div>
+    </div>
+    
+    <!-- AI Tools Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex align-items-center">
+                        <div class="ai-brain me-2">
+                            <div class="ai-brain-pulse"></div>
+                        </div>
+                        <h3 class="mb-0">AI Analysis Tools</h3>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form id="ai-analysis-form">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="analysis-type" class="form-label">Analysis Type</label>
+                                <select class="form-select" id="analysis-type">
+                                    <option selected disabled>Select analysis type...</option>
+                                    <option value="hotspot">Hotspot Analysis</option>
+                                    <option value="proximity">Proximity Analysis</option>
+                                    <option value="cluster">Cluster Analysis</option>
+                                    <option value="interpolation">Spatial Interpolation</option>
+                                    <option value="correlation">Spatial Correlation</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="dataset-select" class="form-label">Dataset</label>
+                                <select class="form-select" id="dataset-select">
+                                    <option selected disabled>Select dataset...</option>
+                                    <option value="parcels">Parcels</option>
+                                    <option value="buildings">Buildings</option>
+                                    <option value="demographics">Demographics</option>
+                                    <option value="infrastructure">Infrastructure</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="parameters" class="form-label">Parameters</label>
+                                <input type="text" class="form-control" id="parameters" placeholder="e.g. distance=500, points=10">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="output-format" class="form-label">Output Format</label>
+                                <select class="form-select" id="output-format">
+                                    <option value="map">Map Visualization</option>
+                                    <option value="table">Data Table</option>
+                                    <option value="chart">Chart</option>
+                                    <option value="report">Report</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="nlq-input-analytics" class="form-label">Natural Language Query (Optional)</label>
+                                <textarea class="form-control" id="nlq-input-analytics" rows="2" placeholder="Describe what you want to analyze in plain English (e.g., Find areas with highest property values near parks)"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning-charge me-1" viewBox="0 0 16 16">
+                                        <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09zM4.157 8.5H7a.5.5 0 0 1 .478.647L6.11 13.59l5.732-6.09H9a.5.5 0 0 1-.478-.647L9.89 2.41 4.157 8.5z"/>
+                                    </svg>
+                                    Run Analysis
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analysis Results Section (initially hidden) -->
+    <div class="row mb-5" id="analysis-results" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">Analysis Results</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="result-visualization">
+                                <!-- Results visualization will be inserted here -->
+                                <canvas id="result-chart" height="300"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div id="result-summary" class="border rounded p-3">
+                                <h4>Summary</h4>
+                                <div id="summary-content">
+                                    <!-- Summary content will be inserted here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div id="result-data-table">
+                                <h4>Data Table</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered">
+                                        <thead id="result-table-head">
+                                            <!-- Table headers will be inserted here -->
+                                        </thead>
+                                        <tbody id="result-table-body">
+                                            <!-- Table data will be inserted here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-outline-primary me-2" id="export-csv-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-spreadsheet me-1" viewBox="0 0 16 16">
+                                        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V9H3V2a1 1 0 0 1 1-1h5.5v2zM3 12v-2h2v2H3zm0 1h2v2H4a1 1 0 0 1-1-1v-1zm3 2v-2h3v2H6zm4 0v-2h3v1a1 1 0 0 1-1 1h-2zm3-3h-3v-2h3v2zm-7 0v-2h3v2H6z"/>
+                                    </svg>
+                                    Export CSV
+                                </button>
+                                <button class="btn btn-outline-primary me-2" id="export-geojson-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt me-1" viewBox="0 0 16 16">
+                                        <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z"/>
+                                        <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                    </svg>
+                                    Export GeoJSON
+                                </button>
+                                <button class="btn btn-outline-primary" id="view-on-map-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-map me-1" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98 4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"/>
+                                    </svg>
+                                    View on Map
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Saved Analyses Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Saved Analyses</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Dataset</th>
+                                    <th>Created</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Property Value Hotspot</td>
+                                    <td>Hotspot Analysis</td>
+                                    <td>Parcels</td>
+                                    <td>2023-06-01</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1">View</button>
+                                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Infrastructure Proximity</td>
+                                    <td>Proximity Analysis</td>
+                                    <td>Infrastructure</td>
+                                    <td>2023-05-28</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1">View</button>
+                                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Population Density</td>
+                                    <td>Spatial Interpolation</td>
+                                    <td>Demographics</td>
+                                    <td>2023-05-25</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1">View</button>
+                                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Available Agents Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Available AI Agents</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row row-cols-1 row-cols-md-3 g-4">
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Spatial Query Agent</h5>
+                                    <p class="card-text">Executes spatial queries and analysis operations including buffers and intersections.</p>
+                                    <ul class="list-group list-group-flush mb-3">
+                                        <li class="list-group-item"><strong>Status:</strong> <span class="badge bg-success">Active</span></li>
+                                        <li class="list-group-item"><strong>Queries:</strong> 125 completed</li>
+                                    </ul>
+                                    <button class="btn btn-sm btn-primary">Use Agent</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Data Convert Agent</h5>
+                                    <p class="card-text">Converts between different geospatial data formats and coordinate systems.</p>
+                                    <ul class="list-group list-group-flush mb-3">
+                                        <li class="list-group-item"><strong>Status:</strong> <span class="badge bg-success">Active</span></li>
+                                        <li class="list-group-item"><strong>Conversions:</strong> 78 completed</li>
+                                    </ul>
+                                    <button class="btn btn-sm btn-primary">Use Agent</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Audit Agent</h5>
+                                    <p class="card-text">Audits and validates geospatial data, suggesting corrections when issues are found.</p>
+                                    <ul class="list-group list-group-flush mb-3">
+                                        <li class="list-group-item"><strong>Status:</strong> <span class="badge bg-success">Active</span></li>
+                                        <li class="list-group-item"><strong>Audits:</strong> 42 completed</li>
+                                    </ul>
+                                    <button class="btn btn-sm btn-primary">Use Agent</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle AI Analysis Form
+        const aiAnalysisForm = document.getElementById('ai-analysis-form');
+        const analysisResults = document.getElementById('analysis-results');
+        
+        aiAnalysisForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            const submitButton = aiAnalysisForm.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...`;
+            
+            // Get form values for display
+            const analysisType = document.getElementById('analysis-type').value;
+            const dataset = document.getElementById('dataset-select').value;
+            const outputFormat = document.getElementById('output-format').value;
+            
+            // Simulate API call with timeout
+            setTimeout(() => {
+                // Reset button state
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonText;
+                
+                // Show results section
+                analysisResults.style.display = 'block';
+                
+                // Populate results based on analysis type
+                if (analysisType === 'hotspot') {
+                    populateHotspotAnalysis(dataset);
+                } else if (analysisType === 'proximity') {
+                    populateProximityAnalysis(dataset);
+                } else {
+                    populateGenericAnalysis(analysisType, dataset);
+                }
+                
+                // Scroll to results
+                analysisResults.scrollIntoView({ behavior: 'smooth' });
+                
+                // Show success message
+                showSuccessMessage(`${analysisType.charAt(0).toUpperCase() + analysisType.slice(1)} analysis completed successfully`);
+            }, 2000);
+        });
+        
+        // Result export buttons
+        document.getElementById('export-csv-btn').addEventListener('click', function() {
+            showInfoMessage('Downloading CSV file...');
+        });
+        
+        document.getElementById('export-geojson-btn').addEventListener('click', function() {
+            showInfoMessage('Downloading GeoJSON file...');
+        });
+        
+        document.getElementById('view-on-map-btn').addEventListener('click', function() {
+            window.location.href = '/map?analysis=latest';
+        });
+        
+        // Functions to populate results based on analysis type
+        function populateHotspotAnalysis(dataset) {
+            // Populate summary
+            document.getElementById('summary-content').innerHTML = `
+                <p>Hotspot analysis completed on <strong>${dataset}</strong> dataset.</p>
+                <ul>
+                    <li>3 significant hotspots identified</li>
+                    <li>2 significant cold spots identified</li>
+                    <li>Confidence level: 95%</li>
+                    <li>Z-score range: -2.52 to 3.18</li>
+                </ul>
+                <p class="alert alert-info">
+                    The results indicate statistically significant clustering in the northeastern region.
+                </p>
+            `;
+            
+            // Create chart
+            const ctx = document.getElementById('result-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Zone A', 'Zone B', 'Zone C', 'Zone D', 'Zone E', 'Zone F'],
+                    datasets: [{
+                        label: 'Z-Score (Hot/Cold Spot Intensity)',
+                        data: [3.18, 2.45, 1.32, -0.87, -1.65, -2.52],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(255, 159, 64, 0.6)',
+                            'rgba(54, 162, 235, 0.4)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(54, 162, 235, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(255, 99, 132)',
+                            'rgb(255, 99, 132)',
+                            'rgb(255, 159, 64)',
+                            'rgb(54, 162, 235)',
+                            'rgb(54, 162, 235)',
+                            'rgb(54, 162, 235)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Z-Score'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Geographical Zone'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Hotspot Analysis Results'
+                        },
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // Populate table
+            document.getElementById('result-table-head').innerHTML = `
+                <tr>
+                    <th>Zone</th>
+                    <th>Z-Score</th>
+                    <th>P-Value</th>
+                    <th>Significance</th>
+                    <th>Feature Count</th>
+                </tr>
+            `;
+            
+            document.getElementById('result-table-body').innerHTML = `
+                <tr>
+                    <td>Zone A</td>
+                    <td>3.18</td>
+                    <td>0.001</td>
+                    <td>Hot Spot (99% confidence)</td>
+                    <td>28</td>
+                </tr>
+                <tr>
+                    <td>Zone B</td>
+                    <td>2.45</td>
+                    <td>0.014</td>
+                    <td>Hot Spot (95% confidence)</td>
+                    <td>35</td>
+                </tr>
+                <tr>
+                    <td>Zone C</td>
+                    <td>1.32</td>
+                    <td>0.187</td>
+                    <td>Not Significant</td>
+                    <td>42</td>
+                </tr>
+                <tr>
+                    <td>Zone D</td>
+                    <td>-0.87</td>
+                    <td>0.384</td>
+                    <td>Not Significant</td>
+                    <td>31</td>
+                </tr>
+                <tr>
+                    <td>Zone E</td>
+                    <td>-1.65</td>
+                    <td>0.099</td>
+                    <td>Not Significant</td>
+                    <td>25</td>
+                </tr>
+                <tr>
+                    <td>Zone F</td>
+                    <td>-2.52</td>
+                    <td>0.012</td>
+                    <td>Cold Spot (95% confidence)</td>
+                    <td>19</td>
+                </tr>
+            `;
+        }
+        
+        function populateProximityAnalysis(dataset) {
+            // Populate summary
+            document.getElementById('summary-content').innerHTML = `
+                <p>Proximity analysis completed on <strong>${dataset}</strong> dataset.</p>
+                <ul>
+                    <li>42 features analyzed</li>
+                    <li>Average distance: 523.7 meters</li>
+                    <li>Nearest neighbor ratio: 0.82</li>
+                    <li>Distance range: 125.3 - 982.1 meters</li>
+                </ul>
+                <p class="alert alert-info">
+                    The results indicate a clustered pattern, with features being closer together than would be expected in a random distribution.
+                </p>
+            `;
+            
+            // Create chart
+            const ctx = document.getElementById('result-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Distance Distribution',
+                        data: [
+                            {x: 125.3, y: 0.05},
+                            {x: 218.6, y: 0.12},
+                            {x: 312.8, y: 0.21},
+                            {x: 426.5, y: 0.28},
+                            {x: 523.7, y: 0.18},
+                            {x: 647.2, y: 0.09},
+                            {x: 748.5, y: 0.05},
+                            {x: 841.3, y: 0.02},
+                            {x: 982.1, y: 0.01}
+                        ],
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgb(54, 162, 235)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Frequency'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Distance (meters)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Proximity Analysis Results - Distance Distribution'
+                        }
+                    }
+                }
+            });
+            
+            // Populate table
+            document.getElementById('result-table-head').innerHTML = `
+                <tr>
+                    <th>Feature ID</th>
+                    <th>Feature Type</th>
+                    <th>Nearest Neighbor</th>
+                    <th>Distance (m)</th>
+                    <th>Direction</th>
+                </tr>
+            `;
+            
+            document.getElementById('result-table-body').innerHTML = `
+                <tr>
+                    <td>F001</td>
+                    <td>Building</td>
+                    <td>F015</td>
+                    <td>125.3</td>
+                    <td>NE</td>
+                </tr>
+                <tr>
+                    <td>F002</td>
+                    <td>Building</td>
+                    <td>F018</td>
+                    <td>218.6</td>
+                    <td>SW</td>
+                </tr>
+                <tr>
+                    <td>F003</td>
+                    <td>Building</td>
+                    <td>F022</td>
+                    <td>312.8</td>
+                    <td>NW</td>
+                </tr>
+                <tr>
+                    <td>F004</td>
+                    <td>Infrastructure</td>
+                    <td>F009</td>
+                    <td>426.5</td>
+                    <td>SE</td>
+                </tr>
+                <tr>
+                    <td>F005</td>
+                    <td>Infrastructure</td>
+                    <td>F012</td>
+                    <td>523.7</td>
+                    <td>N</td>
+                </tr>
+            `;
+        }
+        
+        function populateGenericAnalysis(analysisType, dataset) {
+            // Populate summary
+            document.getElementById('summary-content').innerHTML = `
+                <p>${analysisType.charAt(0).toUpperCase() + analysisType.slice(1)} analysis completed on <strong>${dataset}</strong> dataset.</p>
+                <ul>
+                    <li>63 features analyzed</li>
+                    <li>5 significant patterns identified</li>
+                    <li>Confidence level: 95%</li>
+                </ul>
+                <p class="alert alert-info">
+                    The analysis has discovered spatial patterns that may indicate important relationships in the data.
+                </p>
+            `;
+            
+            // Create chart - use a pie chart for generic analysis
+            const ctx = document.getElementById('result-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Pattern A', 'Pattern B', 'Pattern C', 'Other'],
+                    datasets: [{
+                        data: [42, 28, 15, 15],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(75, 192, 192, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgb(54, 162, 235)',
+                            'rgb(255, 99, 132)',
+                            'rgb(255, 206, 86)',
+                            'rgb(75, 192, 192)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `${analysisType.charAt(0).toUpperCase() + analysisType.slice(1)} Analysis Results - Pattern Distribution`
+                        },
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+            
+            // Populate table
+            document.getElementById('result-table-head').innerHTML = `
+                <tr>
+                    <th>Pattern</th>
+                    <th>Feature Count</th>
+                    <th>Confidence</th>
+                    <th>Description</th>
+                </tr>
+            `;
+            
+            document.getElementById('result-table-body').innerHTML = `
+                <tr>
+                    <td>Pattern A</td>
+                    <td>42</td>
+                    <td>95%</td>
+                    <td>Significant clustering in the dataset</td>
+                </tr>
+                <tr>
+                    <td>Pattern B</td>
+                    <td>28</td>
+                    <td>90%</td>
+                    <td>Moderate correlation with geographical features</td>
+                </tr>
+                <tr>
+                    <td>Pattern C</td>
+                    <td>15</td>
+                    <td>85%</td>
+                    <td>Weak but noticeable spatial autocorrelation</td>
+                </tr>
+                <tr>
+                    <td>Other</td>
+                    <td>15</td>
+                    <td>N/A</td>
+                    <td>No significant pattern detected</td>
+                </tr>
+            `;
+        }
+    });
+</script>
+{% endblock %}

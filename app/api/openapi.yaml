@@ -1,0 +1,379 @@
+openapi: 3.0.0
+info:
+  title: TerraFusion Platform API
+  description: API for the TerraFusion geospatial microservices platform.
+  version: 1.0.0
+  contact:
+    name: TerraFusion Support
+    email: support@terrafusion.example.com
+
+servers:
+  - url: /api
+    description: TerraFusion API
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    Token:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+      required:
+        - access_token
+        - token_type
+    
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+        is_active:
+          type: boolean
+        is_superuser:
+          type: boolean
+      required:
+        - id
+        - username
+        - is_active
+    
+    SpatialFeature:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [Feature]
+        geometry:
+          type: object
+          description: GeoJSON geometry
+        properties:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            description:
+              type: string
+            feature_type:
+              type: string
+          required:
+            - id
+            - name
+            - feature_type
+      required:
+        - type
+        - geometry
+        - properties
+    
+    FeatureCollection:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [FeatureCollection]
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpatialFeature'
+      required:
+        - type
+        - features
+    
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        action:
+          type: string
+        resource_type:
+          type: string
+        resource_id:
+          type: string
+        before_state:
+          type: object
+        after_state:
+          type: object
+        ip_address:
+          type: string
+        user_agent:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - action
+        - resource_type
+        - resource_id
+        - created_at
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      summary: Login and get access token
+      tags:
+        - authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '401':
+          description: Invalid credentials
+  
+  /auth/me:
+    get:
+      summary: Get current user information
+      tags:
+        - authentication
+      responses:
+        '200':
+          description: Current user information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  
+  /etl/sync:
+    get:
+      summary: Synchronize data between JCHARRISPACS SQL Server and PostgreSQL/PostGIS
+      tags:
+        - terraflow
+      parameters:
+        - name: dataset
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: full_sync
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Synchronization status
+  
+  /etl/transform:
+    post:
+      summary: Transform data between different formats
+      tags:
+        - terraflow
+      parameters:
+        - name: source_format
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: target_format
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transformation result
+  
+  /tiles/features:
+    get:
+      summary: Get spatial features for map display
+      tags:
+        - terramap
+      parameters:
+        - name: bbox
+          in: query
+          schema:
+            type: string
+        - name: feature_type
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: GeoJSON feature collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureCollection'
+  
+  /tiles/sources:
+    get:
+      summary: Get available tile sources for map
+      tags:
+        - terramap
+      responses:
+        '200':
+          description: List of available tile sources
+  
+  /ai/analyze:
+    post:
+      summary: Analyze spatial data using AI tools
+      tags:
+        - terrainsight
+      parameters:
+        - name: analysis_type
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: geometry
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: distance
+          in: query
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Analysis result
+  
+  /ai/query:
+    post:
+      summary: Execute natural language queries using AI agents
+      tags:
+        - terrainsight
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Query result
+  
+  /audit/logs:
+    get:
+      summary: Get audit logs with optional filters
+      tags:
+        - terraaudit
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: user_id
+          in: query
+          schema:
+            type: string
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: resource_type
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of audit logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  offset:
+                    type: integer
+                  limit:
+                    type: integer
+                  logs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuditLog'
+  
+  /audit/correction:
+    post:
+      summary: Submit a data correction
+      tags:
+        - terraaudit
+      parameters:
+        - name: feature_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: correction_type
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: reason
+          in: query
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Correction submitted

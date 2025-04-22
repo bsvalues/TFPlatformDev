@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block title %}TerraFusion Platform - Interactive Map{% endblock %}
+
+{% block head %}
+<!-- Additional map-specific head content -->
+<style>
+.map-container {
+    position: relative;
+    height: calc(100vh - 160px);
+}
+
+.map-sidebar {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 350px;
+    z-index: 10;
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+}
+
+.map-sidebar-toggle {
+    position: absolute;
+    right: 350px;
+    top: 10px;
+    z-index: 11;
+}
+
+.sidebar-collapsed .map-sidebar {
+    transform: translateX(350px);
+}
+
+.sidebar-collapsed .map-sidebar-toggle {
+    right: 0;
+}
+
+.layer-group {
+    margin-bottom: 15px;
+}
+
+.layer-header {
+    cursor: pointer;
+    padding: 0.5rem 0;
+}
+
+.map-function-btn {
+    margin-bottom: 5px;
+}
+
+.analysis-panel {
+    margin-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 15px;
+}
+
+#map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="map-container">
+        <!-- Main Map -->
+        <div id="map"></div>
+        
+        <!-- Map Sidebar -->
+        <div class="map-sidebar p-3 bg-dark">
+            <h4 class="text-light mb-4">Map Controls</h4>
+            
+            <!-- Search Box -->
+            <div class="mb-4">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="map-search" placeholder="Search locations...">
+                    <button class="btn btn-primary" type="button" id="map-search-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Map Functions -->
+            <div class="mb-4">
+                <h5 class="text-light mb-3">Tools</h5>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-light map-function-btn" id="buffer-tool-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        </svg>
+                        Buffer Analysis
+                    </button>
+                    <button class="btn btn-outline-light map-function-btn" id="intersection-tool-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-intersect" viewBox="0 0 16 16">
+                            <path d="M0 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2H2a2 2 0 0 1-2-2V2zm5 10v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2v5a2 2 0 0 1-2 2H5zm6-8V2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2V6a2 2 0 0 1 2-2h5z"/>
+                        </svg>
+                        Intersection Analysis
+                    </button>
+                    <button class="btn btn-outline-light map-function-btn" id="measure-tool-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-rulers" viewBox="0 0 16 16">
+                            <path d="M1 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5v-1H2v-1h4v-1H4v-1h2v-1H2v-1h4V9H4V8h2V7H2V6h4V2h1v4h1V4h1v2h1V2h1v4h1V4h1v2h1V2h1v4h1V1a1 1 0 0 0-1-1H1z"/>
+                        </svg>
+                        Measure Distance/Area
+                    </button>
+                    <button class="btn btn-outline-light map-function-btn" id="print-map-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
+                            <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                            <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+                        </svg>
+                        Print Map
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Layers Control -->
+            <div class="mb-4">
+                <h5 class="text-light mb-3">Layers</h5>
+                <div id="layers-control">
+                    <!-- Base Layers -->
+                    <div class="layer-group">
+                        <div class="layer-header d-flex justify-content-between" data-bs-toggle="collapse" data-bs-target="#base-layers">
+                            <span class="text-light">Base Maps</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down text-light" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </div>
+                        <div id="base-layers" class="collapse show">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input layer-toggle" type="radio" name="baseLayerRadio" id="baseLayer1" data-layer-id="osm" checked>
+                                <label class="form-check-label text-light" for="baseLayer1">
+                                    OpenStreetMap
+                                </label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input layer-toggle" type="radio" name="baseLayerRadio" id="baseLayer2" data-layer-id="satellite">
+                                <label class="form-check-label text-light" for="baseLayer2">
+                                    Satellite Imagery
+                                </label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input layer-toggle" type="radio" name="baseLayerRadio" id="baseLayer3" data-layer-id="terrain">
+                                <label class="form-check-label text-light" for="baseLayer3">
+                                    Terrain
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Feature Layers -->
+                    <div class="layer-group">
+                        <div class="layer-header d-flex justify-content-between" data-bs-toggle="collapse" data-bs-target="#feature-layers">
+                            <span class="text-light">Feature Layers</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down text-light" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </div>
+                        <div id="feature-layers" class="collapse show">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input layer-toggle" type="checkbox" id="featureLayer1" data-layer-id="parcels">
+                                <label class="form-check-label text-light" for="featureLayer1">
+                                    Parcels
+                                </label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input layer-toggle" type="checkbox" id="featureLayer2" data-layer-id="buildings">
+                                <label class="form-check-label text-light" for="featureLayer2">
+                                    Buildings
+                                </label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input layer-toggle" type="checkbox" id="featureLayer3" data-layer-id="roads">
+                                <label class="form-check-label text-light" for="featureLayer3">
+                                    Roads
+                                </label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input layer-toggle" type="checkbox" id="featureLayer4" data-layer-id="hydrology">
+                                <label class="form-check-label text-light" for="featureLayer4">
+                                    Hydrology
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Analysis Layers -->
+                    <div class="layer-group">
+                        <div class="layer-header d-flex justify-content-between" data-bs-toggle="collapse" data-bs-target="#analysis-layers">
+                            <span class="text-light">Analysis Layers</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down text-light" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </div>
+                        <div id="analysis-layers" class="collapse show">
+                            <div id="analysis-layers-content">
+                                <p class="text-light text-center mt-3 small">No analysis layers available.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Analysis Panel -->
+            <div class="analysis-panel">
+                <h5 class="text-light mb-3">
+                    <div class="ai-brain">
+                        <div class="ai-brain-pulse"></div>
+                    </div>
+                    AI Analysis
+                </h5>
+                <form id="nlq-form" class="mb-3">
+                    <div class="mb-3">
+                        <label for="nlq-input" class="form-label text-light">Natural Language Query</label>
+                        <textarea class="form-control" id="nlq-input" rows="2" placeholder="Example: Find all parcels within 500m of Main St"></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning-charge" viewBox="0 0 16 16">
+                                <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09zM4.157 8.5H7a.5.5 0 0 1 .478.647L6.11 13.59l5.732-6.09H9a.5.5 0 0 1-.478-.647L9.89 2.41 4.157 8.5z"/>
+                            </svg>
+                            Execute Query
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="query-result"></div>
+            </div>
+        </div>
+        
+        <!-- Sidebar Toggle Button -->
+        <button class="btn btn-sm btn-dark map-sidebar-toggle" id="sidebar-toggle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+            </svg>
+        </button>
+        
+        <!-- Buffer Tool Modal -->
+        <div class="modal fade" id="bufferToolModal" tabindex="-1" aria-labelledby="bufferToolModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="bufferToolModalLabel">Buffer Analysis</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Create a buffer around a point or feature.</p>
+                        <form id="buffer-form">
+                            <div class="mb-3">
+                                <label for="buffer-input-type" class="form-label">Input Type</label>
+                                <select class="form-select" id="buffer-input-type">
+                                    <option value="point">Point (Click on map)</option>
+                                    <option value="feature">Selected Feature</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="buffer-distance" class="form-label">Buffer Distance (meters)</label>
+                                <input type="number" class="form-control" id="buffer-distance" value="1000" min="1" max="10000">
+                            </div>
+                        </form>
+                        <div id="buffer-instructions" class="alert alert-info">
+                            Click on the map to place the buffer center point.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="buffer-execute">Execute Buffer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Map-specific JavaScript -->
+<script src="/static/js/maplibre.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize map
+        const map = initializeMap('map', {
+            style: '/api/tiles/styles/default',
+            center: [-95.7129, 37.0902], // Default to US center
+            zoom: 4
+        });
+        
+        // Sidebar toggle functionality
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const mapContainer = document.querySelector('.map-container');
+        
+        sidebarToggle.addEventListener('click', function() {
+            mapContainer.classList.toggle('sidebar-collapsed');
+            
+            // Update toggle button icon
+            const icon = sidebarToggle.querySelector('svg');
+            if (mapContainer.classList.contains('sidebar-collapsed')) {
+                icon.innerHTML = '<path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>';
+            } else {
+                icon.innerHTML = '<path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>';
+            }
+            
+            // Trigger map resize to adjust to new container size
+            setTimeout(() => {
+                map.resize();
+            }, 300);
+        });
+        
+        // Map search functionality
+        const mapSearchBtn = document.getElementById('map-search-btn');
+        mapSearchBtn.addEventListener('click', function() {
+            const searchInput = document.getElementById('map-search');
+            const query = searchInput.value.trim();
+            
+            if (query) {
+                searchLocation(query);
+            }
+        });
+        
+        // Map search input - enter key
+        const mapSearchInput = document.getElementById('map-search');
+        mapSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const query = mapSearchInput.value.trim();
+                
+                if (query) {
+                    searchLocation(query);
+                }
+            }
+        });
+        
+        // Buffer tool
+        const bufferToolBtn = document.getElementById('buffer-tool-btn');
+        const bufferModal = new bootstrap.Modal(document.getElementById('bufferToolModal'));
+        
+        bufferToolBtn.addEventListener('click', function() {
+            bufferModal.show();
+        });
+        
+        // Buffer execute button
+        const bufferExecuteBtn = document.getElementById('buffer-execute');
+        bufferExecuteBtn.addEventListener('click', function() {
+            const inputType = document.getElementById('buffer-input-type').value;
+            const distance = parseFloat(document.getElementById('buffer-distance').value);
+            
+            if (inputType === 'point') {
+                // For demonstration, use a fixed point
+                const center = map.getCenter();
+                createBuffer([center.lng, center.lat], distance);
+                bufferModal.hide();
+            } else {
+                // Handle selected feature (would need feature selection tracking)
+                showInfoMessage('Please select a feature on the map first');
+            }
+        });
+        
+        // Layer toggles
+        const layerToggles = document.querySelectorAll('.layer-toggle');
+        layerToggles.forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const layerId = this.dataset.layerId;
+                
+                if (this.type === 'radio') {
+                    // Base layers (radio buttons)
+                    if (this.checked) {
+                        // Simple example - in real implementation, would change the map style
+                        showInfoMessage(`Switched base map to ${layerId}`);
+                    }
+                } else {
+                    // Feature layers (checkboxes)
+                    if (this.checked) {
+                        // Show layer - would load from API in real implementation
+                        showInfoMessage(`Showing layer: ${layerId}`);
+                    } else {
+                        // Hide layer
+                        showInfoMessage(`Hiding layer: ${layerId}`);
+                    }
+                }
+            });
+        });
+        
+        // Natural language query form
+        const nlqForm = document.getElementById('nlq-form');
+        nlqForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const queryInput = document.getElementById('nlq-input');
+            const query = queryInput.value.trim();
+            
+            if (query) {
+                // Show loading state
+                const submitButton = nlqForm.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+                submitButton.disabled = true;
+                submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...`;
+                
+                // Simulate API call
+                setTimeout(() => {
+                    // Reset button state
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                    
+                    // Show result (would be from API in real implementation)
+                    const resultContainer = document.getElementById('query-result');
+                    resultContainer.innerHTML = `
+                        <div class="card bg-dark text-light border-light mt-3">
+                            <div class="card-header">Query Result</div>
+                            <div class="card-body">
+                                <p><strong>Query:</strong> ${query}</p>
+                                <p><strong>Explanation:</strong> Analyzing spatial relationships based on your query.</p>
+                                <div class="alert alert-info">
+                                    The AI is processing your request. Results will appear on the map when ready.
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    showSuccessMessage('Query processed successfully');
+                }, 1500);
+            } else {
+                showErrorMessage('Please enter a query');
+            }
+        });
+    });
+</script>
+{% endblock %}

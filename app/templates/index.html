@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}TerraFusion Platform - Home{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row align-items-center mb-5">
+        <div class="col-lg-6">
+            <h1 class="display-5 fw-bold">TerraFusion Platform</h1>
+            <p class="lead">A comprehensive geospatial data processing platform with AI agent orchestration and SQL Server integration.</p>
+            <p class="mb-4">Access advanced spatial analysis, data synchronization, and AI-powered insights in one unified platform.</p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <a href="/map" class="btn btn-primary btn-lg px-4 me-md-2">Explore Map</a>
+                <a href="/analytics" class="btn btn-outline-secondary btn-lg px-4">View Analytics</a>
+            </div>
+        </div>
+        <div class="col-lg-6 d-none d-lg-block text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 800 600" fill="none">
+                <path d="M400 50L600 150V350L400 450L200 350V150L400 50Z" fill="#0d6efd" opacity="0.2" />
+                <path d="M400 50L600 150V350L400 450L200 350V150L400 50Z" stroke="#0d6efd" stroke-width="4" />
+                <path d="M400 150L500 200V300L400 350L300 300V200L400 150Z" fill="#0d6efd" opacity="0.3" />
+                <path d="M400 150L500 200V300L400 350L300 300V200L400 150Z" stroke="#0d6efd" stroke-width="2" />
+                <circle cx="400" cy="50" r="10" fill="#0d6efd" />
+                <circle cx="600" cy="150" r="10" fill="#0d6efd" />
+                <circle cx="600" cy="350" r="10" fill="#0d6efd" />
+                <circle cx="400" cy="450" r="10" fill="#0d6efd" />
+                <circle cx="200" cy="350" r="10" fill="#0d6efd" />
+                <circle cx="200" cy="150" r="10" fill="#0d6efd" />
+                <circle cx="400" cy="150" r="8" fill="#0d6efd" />
+                <circle cx="500" cy="200" r="8" fill="#0d6efd" />
+                <circle cx="500" cy="300" r="8" fill="#0d6efd" />
+                <circle cx="400" cy="350" r="8" fill="#0d6efd" />
+                <circle cx="300" cy="300" r="8" fill="#0d6efd" />
+                <circle cx="300" cy="200" r="8" fill="#0d6efd" />
+                <line x1="400" y1="150" x2="400" y2="50" stroke="#0d6efd" stroke-width="2" />
+                <line x1="500" y1="200" x2="600" y2="150" stroke="#0d6efd" stroke-width="2" />
+                <line x1="500" y1="300" x2="600" y2="350" stroke="#0d6efd" stroke-width="2" />
+                <line x1="400" y1="350" x2="400" y2="450" stroke="#0d6efd" stroke-width="2" />
+                <line x1="300" y1="300" x2="200" y2="350" stroke="#0d6efd" stroke-width="2" />
+                <line x1="300" y1="200" x2="200" y2="150" stroke="#0d6efd" stroke-width="2" />
+            </svg>
+        </div>
+    </div>
+    
+    <div class="row g-4 py-5">
+        <div class="col-lg-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="dashboard-card-icon text-primary me-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 16 16">
+                                <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z"/>
+                                <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                            </svg>
+                        </div>
+                        <h3 class="card-title">TerraMap</h3>
+                    </div>
+                    <p class="card-text">Interactive mapping platform for visualizing geospatial data with advanced querying capabilities.</p>
+                    <a href="/map" class="btn btn-outline-primary">Open Map</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="dashboard-card-icon text-primary me-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
+                                <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+                                <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+                            </svg>
+                        </div>
+                        <h3 class="card-title">TerraFlow</h3>
+                    </div>
+                    <p class="card-text">Data synchronization and ETL pipeline between JCHARRISPACS SQL Server and PostGIS.</p>
+                    <a href="/etl" class="btn btn-outline-primary">Manage Data</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="dashboard-card-icon text-primary me-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-lightbulb" viewBox="0 0 16 16">
+                                <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm6-5a5 5 0 0 0-3.479 8.592c.263.254.514.564.676.941L5.83 12h4.342l.632-1.467c.162-.377.413-.687.676-.941A5 5 0 0 0 8 1z"/>
+                            </svg>
+                        </div>
+                        <h3 class="card-title">TerraInsight</h3>
+                    </div>
+                    <p class="card-text">AI-powered spatial analysis and insights using LangChain agents and natural language queries.</p>
+                    <a href="/analytics" class="btn btn-outline-primary">Explore Insights</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h4 class="mb-0">Recent Activity</h4>
+                </div>
+                <div class="card-body">
+                    <div class="audit-timeline">
+                        <div class="audit-item audit-item-update">
+                            <p class="mb-1"><strong>Data Update</strong> - TerraFlow Sync</p>
+                            <p class="text-muted small mb-0">Completed synchronization of Parcels data - 2 minutes ago</p>
+                        </div>
+                        <div class="audit-item audit-item-create">
+                            <p class="mb-1"><strong>Correction Approved</strong> - Property Lines</p>
+                            <p class="text-muted small mb-0">Geometry correction approved by admin - 1 hour ago</p>
+                        </div>
+                        <div class="audit-item">
+                            <p class="mb-1"><strong>AI Analysis</strong> - Buffer Analysis</p>
+                            <p class="text-muted small mb-0">Generated 500m buffer around selected features - 3 hours ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <a href="/audit" class="btn btn-sm btn-outline-primary">View All Activity</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h4 class="mb-0">System Status</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="mb-0">Database Connections</h5>
+                        </div>
+                        <div>
+                            <span class="badge bg-success">Connected</span>
+                        </div>
+                    </div>
+                    <div class="progress mb-3" style="height: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="mb-0">AI Agent System</h5>
+                        </div>
+                        <div>
+                            <span class="badge bg-success">Online</span>
+                        </div>
+                    </div>
+                    <div class="progress mb-3" style="height: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="mb-0">JCHARRISPACS Connection</h5>
+                        </div>
+                        <div>
+                            <span class="badge bg-success">Connected</span>
+                        </div>
+                    </div>
+                    <div class="progress mb-3" style="height: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="mb-0">ETL Pipeline</h5>
+                        </div>
+                        <div>
+                            <span class="badge bg-success">Running</span>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#statusModal">View Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusModalLabel">System Status Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Status</th>
+                                <th>Last Updated</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>PostgreSQL/PostGIS</td>
+                                <td><span class="badge bg-success">Connected</span></td>
+                                <td>Just now</td>
+                                <td>Connection pool: 5/10 active</td>
+                            </tr>
+                            <tr>
+                                <td>SQL Server (JCHARRISPACS)</td>
+                                <td><span class="badge bg-success">Connected</span></td>
+                                <td>Just now</td>
+                                <td>Using Windows Authentication</td>
+                            </tr>
+                            <tr>
+                                <td>MCP Server</td>
+                                <td><span class="badge bg-success">Running</span></td>
+                                <td>Just now</td>
+                                <td>3 agents registered</td>
+                            </tr>
+                            <tr>
+                                <td>Redis Event Bus</td>
+                                <td><span class="badge bg-success">Connected</span></td>
+                                <td>Just now</td>
+                                <td>Event processing active</td>
+                            </tr>
+                            <tr>
+                                <td>Authentication System</td>
+                                <td><span class="badge bg-success">Active</span></td>
+                                <td>Just now</td>
+                                <td>County AD integration enabled</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
