@@ -1,5 +1,6 @@
 import logging
 import os
+import asyncio
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
@@ -30,6 +31,17 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 
 # Initialize the database with the app
 db.init_app(app)
+
+# Import AI agent routes
+try:
+    from services.ai_agents.routes import register_agent_routes
+    # Register AI agent routes immediately to avoid "already handled request" errors
+    register_agent_routes(app)
+    logger.info("AI agent routes registered")
+    has_ai_agents = True
+except ImportError:
+    logger.warning("AI agent modules not available")
+    has_ai_agents = False
 
 # Create routes for main pages
 @app.route('/')
@@ -109,6 +121,16 @@ def audit_api(audit_path):
     # Simplified audit endpoint
     return jsonify({"status": "success", "message": f"Audit for {audit_path}"})
 
+# Helper function to run async tasks from sync code
+def run_async(coro):
+    """Run an async coroutine from sync code"""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        return loop.run_until_complete(coro)
+    finally:
+        loop.close()
+
 # Database initialization (simplified)
 with app.app_context():
     try:
@@ -126,7 +148,18 @@ def initialize_app():
     if not getattr(app, '_initialization_complete', False):
         logger.info("TerraFusion Platform starting...")
         try:
-            # Initialize any services here in the future
+            # Initialize AI Agent Manager if available
+            if has_ai_agents:
+                try:
+                    # Import here to avoid circular imports
+                    from services.ai_agents.agent_manager import get_agent_manager
+                    # Initialize agent manager in a separate thread
+                    # We can't use await directly in Flask, so we use a helper
+                    run_async(get_agent_manager())
+                    logger.info("AI Agent Manager initialized")
+                except Exception as e:
+                    logger.error(f"Error initializing AI Agent Manager: {e}")
+            
             app._initialization_complete = True
             logger.info("TerraFusion Platform started successfully")
         except Exception as e:
