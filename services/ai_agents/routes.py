@@ -2,6 +2,7 @@
 API routes for TerraFusion AI agents.
 """
 
+import asyncio
 import base64
 import json
 import logging
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 ai_agent_bp = Blueprint('ai_agent', __name__, url_prefix='/api/ai')
 
 @ai_agent_bp.route('/agents', methods=['GET'])
-async def list_agents():
+def list_agents():
     """
     List all available AI agents and their capabilities
     
@@ -28,10 +29,20 @@ async def list_agents():
         JSON response with agent information
     """
     try:
-        agent_manager = await get_agent_manager()
+        # Use a helper function to run the async code in a sync context
+        def run_async_get_agents():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                agent_manager = loop.run_until_complete(get_agent_manager())
+                return agent_manager.get_agent_info()
+            finally:
+                loop.close()
+        
+        agents = run_async_get_agents()
         return jsonify({
             "status": "success",
-            "agents": agent_manager.get_agent_info()
+            "agents": agents
         })
     except Exception as e:
         logger.error(f"Error listing agents: {e}")
@@ -41,7 +52,7 @@ async def list_agents():
         }), 500
 
 @ai_agent_bp.route('/process/<agent_id>', methods=['POST'])
-async def process_with_agent(agent_id):
+def process_with_agent(agent_id):
     """
     Process data with a specific agent
     
@@ -52,12 +63,22 @@ async def process_with_agent(agent_id):
         JSON response with processing results
     """
     try:
-        # Parse input data based on content type
-        input_data, options = await _parse_request_data(request)
+        # Use a helper function to run the async code in a sync context
+        def run_async_process():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                # Parse input data based on content type
+                input_data, options = loop.run_until_complete(_parse_request_data(request))
+                
+                # Process with specified agent
+                agent_manager = loop.run_until_complete(get_agent_manager())
+                result = loop.run_until_complete(agent_manager.process_with_agent(agent_id, input_data, options))
+                return result
+            finally:
+                loop.close()
         
-        # Process with specified agent
-        agent_manager = await get_agent_manager()
-        result = await agent_manager.process_with_agent(agent_id, input_data, options)
+        result = run_async_process()
         
         return jsonify({
             "status": "success",
@@ -77,7 +98,7 @@ async def process_with_agent(agent_id):
         }), 500
 
 @ai_agent_bp.route('/process/type/<agent_type>', methods=['POST'])
-async def process_with_agent_type(agent_type):
+def process_with_agent_type(agent_type):
     """
     Process data with an agent of the specified type
     
@@ -97,12 +118,22 @@ async def process_with_agent_type(agent_type):
                 "message": f"Invalid agent type: {agent_type}"
             }), 400
         
-        # Parse input data based on content type
-        input_data, options = await _parse_request_data(request)
+        # Use a helper function to run the async code in a sync context
+        def run_async_process():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                # Parse input data based on content type
+                input_data, options = loop.run_until_complete(_parse_request_data(request))
+                
+                # Process with agent of specified type
+                agent_manager = loop.run_until_complete(get_agent_manager())
+                result = loop.run_until_complete(agent_manager.process_with_agent_type(agent_type_enum, input_data, options))
+                return result
+            finally:
+                loop.close()
         
-        # Process with agent of specified type
-        agent_manager = await get_agent_manager()
-        result = await agent_manager.process_with_agent_type(agent_type_enum, input_data, options)
+        result = run_async_process()
         
         return jsonify({
             "status": "success",
@@ -122,7 +153,7 @@ async def process_with_agent_type(agent_type):
         }), 500
 
 @ai_agent_bp.route('/process/capability/<capability>', methods=['POST'])
-async def process_with_capability(capability):
+def process_with_capability(capability):
     """
     Process data with the best agent for a specific capability
     
@@ -133,12 +164,22 @@ async def process_with_capability(capability):
         JSON response with processing results
     """
     try:
-        # Parse input data based on content type
-        input_data, options = await _parse_request_data(request)
+        # Use a helper function to run the async code in a sync context
+        def run_async_process():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                # Parse input data based on content type
+                input_data, options = loop.run_until_complete(_parse_request_data(request))
+                
+                # Process with best agent for capability
+                agent_manager = loop.run_until_complete(get_agent_manager())
+                result = loop.run_until_complete(agent_manager.process_with_best_agent(input_data, capability, options))
+                return result
+            finally:
+                loop.close()
         
-        # Process with best agent for capability
-        agent_manager = await get_agent_manager()
-        result = await agent_manager.process_with_best_agent(input_data, capability, options)
+        result = run_async_process()
         
         return jsonify({
             "status": "success",
