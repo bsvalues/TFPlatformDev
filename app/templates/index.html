@@ -7,6 +7,19 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
     <style>
+        :root {
+            --terra-primary: #2c8d6a;
+            --terra-secondary: #1a5d45;
+            --terra-accent: #48c795;
+            --terra-accent-rgb: 72, 199, 149;
+            --terra-highlight: #6fdfb2;
+            --terra-dark: #124430;
+        }
+        
+        body {
+            background-color: #0c1920;
+        }
+        
         /* Navigation */
         .sidebar {
             height: 100vh;
@@ -15,14 +28,17 @@
             left: 0;
             padding: 0;
             z-index: 100;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
             width: 250px;
+            background-color: var(--terra-dark) !important;
+            border-right: 1px solid rgba(255,255,255,0.1);
         }
         
         .sidebar .navbar-brand {
             padding: 1.5rem 1rem;
             font-size: 1.25rem;
             font-weight: 700;
+            color: var(--terra-highlight) !important;
         }
         
         .sidebar .nav-link {
@@ -31,6 +47,12 @@
             font-weight: 500;
             border-radius: 0.25rem;
             margin: 0.25rem 0.5rem;
+            color: #e4e6e8;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
         
         .sidebar .nav-link svg {
@@ -38,8 +60,8 @@
         }
         
         .sidebar .nav-link.active {
-            background-color: var(--bs-primary);
-            color: white;
+            background-color: var(--terra-primary) !important;
+            color: white !important;
         }
         
         .content-wrapper {
@@ -57,7 +79,77 @@
             justify-content: center;
             width: 48px;
             height: 48px;
-            border-radius: 8px !important;
+            border-radius: 10px !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card {
+            border-color: rgba(255,255,255,0.1);
+            background-color: #0c2229;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-header {
+            background-color: rgba(44, 141, 106, 0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        /* Terra Component Cards */
+        .terra-card .icon-wrapper.bg-primary {
+            background-color: var(--terra-primary) !important;
+        }
+        
+        .terra-card .icon-wrapper.bg-success {
+            background-color: var(--terra-secondary) !important;
+        }
+        
+        .terra-card .icon-wrapper.bg-info {
+            background-color: var(--terra-accent) !important;
+        }
+        
+        .terra-card .icon-wrapper.bg-warning {
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+        }
+        
+        /* AI Brain pulse animation */
+        .ai-brain {
+            position: relative;
+        }
+        
+        .ai-brain::after {
+            content: '';
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 12px;
+            height: 12px;
+            background-color: var(--terra-highlight);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(111, 223, 178, 0.7);
+            }
+            
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(111, 223, 178, 0);
+            }
+            
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(111, 223, 178, 0);
+            }
         }
     </style>
 </head>
@@ -66,10 +158,14 @@
     <nav class="sidebar navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid flex-lg-column align-items-start p-0">
             <a class="navbar-brand d-flex align-items-center" href="/">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-hexagon me-2" viewBox="0 0 16 16">
-                    <path d="M14 4.577v6.846L8 15l-6-3.577V4.577L8 1l6 3.577zM8.5.134a1 1 0 0 0-1 0l-6 3.577a1 1 0 0 0-.5.866v6.846a1 1 0 0 0 .5.866l6 3.577a1 1 0 0 0 1 0l6-3.577a1 1 0 0 0 .5-.866V4.577a1 1 0 0 0-.5-.866L8.5.134z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                    <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"/>
+                    <path d="M8 3.293L3.707 7.586a1 1 0 0 0-.293.707V13h10V8.293a1 1 0 0 0-.293-.707L8 3.293z"/>
+                    <path d="M7 10h2v2H7v-2z"/>
                 </svg>
-                TerraFusion
+                <span style="font-weight: 600; letter-spacing: 0.5px;">
+                    <span style="color: var(--terra-highlight);">Terra</span><span style="color: #fff;">Fusion</span>
+                </span>
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
@@ -150,7 +246,7 @@
                 <!-- Dashboard Cards -->
                 <div class="row mb-4">
                     <div class="col-md-6 col-lg-3 mb-4">
-                        <div class="card h-100">
+                        <div class="card h-100 terra-card">
                             <div class="card-body">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="icon-wrapper bg-primary text-white rounded p-3 me-3">
@@ -161,12 +257,15 @@
                                     <h5 class="card-title mb-0">TerraMap</h5>
                                 </div>
                                 <p class="card-text">Interactive mapping interface with layering and geospatial visualization.</p>
-                                <a href="/map" class="btn btn-outline-primary">View Maps</a>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="/map" class="btn btn-outline-primary">View Maps</a>
+                                    <span class="badge bg-light text-dark">GIS</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6 col-lg-3 mb-4">
-                        <div class="card h-100">
+                        <div class="card h-100 terra-card">
                             <div class="card-body">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="icon-wrapper bg-success text-white rounded p-3 me-3">
@@ -177,15 +276,18 @@
                                     <h5 class="card-title mb-0">TerraFlow</h5>
                                 </div>
                                 <p class="card-text">Data flow management and ETL processes for geospatial data.</p>
-                                <a href="/flow" class="btn btn-outline-success">Manage Flows</a>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="/flow" class="btn btn-outline-success">Manage Flows</a>
+                                    <span class="badge bg-light text-dark">ETL</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6 col-lg-3 mb-4">
-                        <div class="card h-100">
+                        <div class="card h-100 terra-card">
                             <div class="card-body">
                                 <div class="d-flex align-items-center mb-3">
-                                    <div class="icon-wrapper bg-info text-white rounded p-3 me-3">
+                                    <div class="icon-wrapper bg-info text-white rounded p-3 me-3 ai-brain">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-lightbulb" viewBox="0 0 16 16">
                                             <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm6-5a5 5 0 0 0-3.479 8.592c.263.254.514.564.676.941L5.83 12h4.342l.632-1.467c.162-.377.413-.687.676-.941A5 5 0 0 0 8 1z"/>
                                         </svg>
@@ -193,12 +295,15 @@
                                     <h5 class="card-title mb-0">TerraInsight</h5>
                                 </div>
                                 <p class="card-text">AI-powered analytics and insights from geospatial data.</p>
-                                <a href="/insight" class="btn btn-outline-info">View Insights</a>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="/insight" class="btn btn-outline-info">View Insights</a>
+                                    <span class="badge bg-light text-dark">AI Analytics</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6 col-lg-3 mb-4">
-                        <div class="card h-100">
+                        <div class="card h-100 terra-card">
                             <div class="card-body">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="icon-wrapper bg-warning text-dark rounded p-3 me-3">
@@ -211,7 +316,10 @@
                                     <h5 class="card-title mb-0">TerraAudit</h5>
                                 </div>
                                 <p class="card-text">Data quality auditing and correction workflow management.</p>
-                                <a href="/audit" class="btn btn-outline-warning">View Audit</a>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="/audit" class="btn btn-outline-warning">View Audit</a>
+                                    <span class="badge bg-light text-dark">QA/QC</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -279,7 +387,10 @@
                                         <span class="badge bg-success rounded-pill">Online</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        MCP Server
+                                        <div class="d-flex align-items-center">
+                                            <span class="ai-brain me-2">MCP Server</span>
+                                            <small class="text-muted">(AI Orchestration)</small>
+                                        </div>
                                         <span class="badge bg-success rounded-pill">Online</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
