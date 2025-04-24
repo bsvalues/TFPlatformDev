@@ -39,6 +39,11 @@ try:
     register_agent_routes(app)
     logger.info("AI agent routes registered")
     has_ai_agents = True
+    
+    # Import AI agent UI routes
+    from app.routes.ai_agent_routes import register_ai_agent_ui_routes
+    register_ai_agent_ui_routes(app)
+    logger.info("AI agent UI routes registered")
 except ImportError:
     logger.warning("AI agent modules not available")
     has_ai_agents = False

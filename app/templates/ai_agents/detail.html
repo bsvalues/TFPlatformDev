@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+
+{% block title %}{{ agent.id }} - TerraFusion AI Agents{% endblock %}
+
+{% block head_extras %}
+<style>
+  .capability-badge {
+    font-size: 0.8rem;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+  .history-card {
+    transition: all 0.2s;
+  }
+  .history-card:hover {
+    transform: translateX(5px);
+  }
+  .response-container {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex align-items-center mb-4">
+    <a href="/ai/agents" class="btn btn-sm btn-outline-secondary me-3">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+      </svg>
+      Back to Agents
+    </a>
+    <h1 class="h2 mb-0">{{ agent.id }}</h1>
+  </div>
+
+  <div class="row">
+    <!-- Agent Information -->
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Agent Details</h5>
+          <span class="badge bg-info">{{ agent.type }}</span>
+        </div>
+        <div class="card-body">
+          <p>{{ agent.description }}</p>
+          <h6 class="text-muted mb-2">Capabilities:</h6>
+          <div class="mb-3">
+            {% for capability in agent.capabilities %}
+            <div class="mb-2">
+              <span class="badge bg-secondary capability-badge">{{ capability.name }}</span>
+              <small class="d-block text-muted ps-1 mt-1">{{ capability.description }}</small>
+            </div>
+            {% endfor %}
+          </div>
+          <h6 class="text-muted mb-2">Provider:</h6>
+          <p>
+            {% if "openai" in agent.id %}
+            <span class="badge bg-success">OpenAI</span>
+            {% elif "anthropic" in agent.id %}
+            <span class="badge bg-primary">Anthropic</span>
+            {% else %}
+            <span class="badge bg-secondary">Custom</span>
+            {% endif %}
+          </p>
+          <h6 class="text-muted mb-2">Model:</h6>
+          <p>
+            {% if "openai" in agent.id %}
+            GPT-4o
+            {% elif "anthropic" in agent.id %}
+            Claude 3.5 Sonnet
+            {% else %}
+            Custom Model
+            {% endif %}
+          </p>
+        </div>
+        <div class="card-footer">
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#runAgentModal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+              <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+            </svg>
+            Run Agent
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agent Interaction -->
+    <div class="col-md-8">
+      <!-- Interaction History -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Recent Interactions</h5>
+        </div>
+        <div class="card-body p-0">
+          {% if history|length > 0 %}
+          <div class="list-group list-group-flush">
+            {% for item in history %}
+            <div class="list-group-item history-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <h6 class="mb-1">{{ item.prompt|truncate(60) }}</h6>
+                  <small class="text-muted">{{ item.timestamp }}</small>
+                </div>
+                <button class="btn btn-sm btn-outline-info view-response-btn" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#viewResponseModal"
+                        data-response-id="{{ item.id }}">
+                  View Response
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-4">
+            <p class="text-muted mb-0">No interaction history available.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Agent Performance Metrics (Placeholder for future implementation) -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Performance Metrics</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="card bg-dark">
+                <div class="card-body text-center">
+                  <h6 class="card-title">Average Response Time</h6>
+                  <p class="display-6">2.4s</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card bg-dark">
+                <div class="card-body text-center">
+                  <h6 class="card-title">Success Rate</h6>
+                  <p class="display-6">98%</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card bg-dark">
+                <div class="card-body text-center">
+                  <h6 class="card-title">Total Requests</h6>
+                  <p class="display-6">{{ history|length }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-3 text-center">
+            <small class="text-muted">Note: Performance metrics are simulated for demonstration.</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Run Agent Modal -->
+  <div class="modal fade" id="runAgentModal" tabindex="-1" aria-labelledby="runAgentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="runAgentModalLabel">Run {{ agent.id }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="runAgentForm">
+            <div class="mb-3">
+              <label for="agentPrompt" class="form-label">Prompt / Input Data</label>
+              <textarea class="form-control" id="agentPrompt" rows="5" required
+                placeholder="Enter your prompt or data for the agent to process..."></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="agentOptions" class="form-label">Options (JSON)</label>
+              <textarea class="form-control" id="agentOptions" rows="3" 
+                placeholder='{"temperature": 0.7}'></textarea>
+              <div class="form-text">Optional: Provide configuration options in JSON format</div>
+            </div>
+          </form>
+          <div id="agentResponseContainer" class="d-none">
+            <h6>Agent Response:</h6>
+            <div class="card bg-dark mb-3">
+              <div class="card-body">
+                <pre id="agentResponse" class="mb-0"></pre>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end">
+              <button class="btn btn-sm btn-outline-info" id="copyResponseBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+                  <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                  <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                </svg>
+                Copy
+              </button>
+            </div>
+          </div>
+          <div id="runAgentSpinner" class="text-center d-none my-4">
+            <div class="spinner-border text-info" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Processing your request...</p>
+          </div>
+          <div id="runAgentError" class="alert alert-danger d-none" role="alert">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="runAgentBtn">Run Agent</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Response Modal -->
+  <div class="modal fade" id="viewResponseModal" tabindex="-1" aria-labelledby="viewResponseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="viewResponseModalLabel">Agent Response</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <h6>Prompt:</h6>
+            <div class="card bg-dark mb-3">
+              <div class="card-body">
+                <p id="historyPrompt" class="mb-0"></p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h6>Response:</h6>
+            <div class="card bg-dark mb-3">
+              <div class="card-body response-container">
+                <pre id="historyResponse" class="mb-0"></pre>
+              </div>
+            </div>
+            <div class="text-muted small" id="historyTimestamp"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-outline-info" id="copyHistoryResponseBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+              <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+              <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+            </svg>
+            Copy Response
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Run agent form submission
+    document.getElementById('runAgentBtn').addEventListener('click', function() {
+      const agentId = "{{ agent.id }}";
+      const prompt = document.getElementById('agentPrompt').value;
+      let options = {};
+      
+      try {
+        const optionsText = document.getElementById('agentOptions').value;
+        if (optionsText) {
+          options = JSON.parse(optionsText);
+        }
+      } catch (e) {
+        showRunAgentError("Invalid JSON in options field");
+        return;
+      }
+      
+      if (!prompt) {
+        showRunAgentError("Please provide a prompt");
+        return;
+      }
+      
+      // Show spinner, hide response and error
+      document.getElementById('runAgentSpinner').classList.remove('d-none');
+      document.getElementById('agentResponseContainer').classList.add('d-none');
+      document.getElementById('runAgentError').classList.add('d-none');
+      
+      // Call API to run agent
+      fetch(`/api/ai/process/${agentId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          data: prompt,
+          options: options
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Hide spinner
+        document.getElementById('runAgentSpinner').classList.add('d-none');
+        
+        if (data.status === 'success' && data.result.success) {
+          // Show response
+          const responseContent = typeof data.result.content === 'string' 
+            ? data.result.content 
+            : JSON.stringify(data.result, null, 2);
+            
+          document.getElementById('agentResponse').textContent = responseContent;
+          document.getElementById('agentResponseContainer').classList.remove('d-none');
+        } else {
+          // Show error
+          showRunAgentError(data.result.error || "Failed to process with agent");
+        }
+      })
+      .catch(error => {
+        // Hide spinner and show error
+        document.getElementById('runAgentSpinner').classList.add('d-none');
+        showRunAgentError("Error connecting to agent: " + error.message);
+      });
+    });
+    
+    // Copy response to clipboard
+    document.getElementById('copyResponseBtn').addEventListener('click', function() {
+      const responseText = document.getElementById('agentResponse').textContent;
+      navigator.clipboard.writeText(responseText).then(() => {
+        const originalText = this.innerHTML;
+        this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/></svg> Copied!';
+        setTimeout(() => {
+          this.innerHTML = originalText;
+        }, 2000);
+      });
+    });
+    
+    // Copy history response to clipboard
+    document.getElementById('copyHistoryResponseBtn').addEventListener('click', function() {
+      const responseText = document.getElementById('historyResponse').textContent;
+      navigator.clipboard.writeText(responseText).then(() => {
+        const originalText = this.innerHTML;
+        this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/></svg> Copied!';
+        setTimeout(() => {
+          this.innerHTML = originalText;
+        }, 2000);
+      });
+    });
+    
+    // View response button click handlers
+    document.querySelectorAll('.view-response-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const responseId = this.getAttribute('data-response-id');
+        
+        // In a real implementation, we would fetch the response details from the server
+        // For this demo, we'll use dummy data
+        const history = {{ history|tojson|safe }};
+        const item = history.find(h => h.id === responseId);
+        
+        if (item) {
+          document.getElementById('historyPrompt').textContent = item.prompt;
+          document.getElementById('historyResponse').textContent = item.response;
+          document.getElementById('historyTimestamp').textContent = `Processed on ${item.timestamp}`;
+        }
+      });
+    });
+    
+    function showRunAgentError(message) {
+      const errorElement = document.getElementById('runAgentError');
+      errorElement.textContent = message;
+      errorElement.classList.remove('d-none');
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+
+{% block title %}AI Agents - TerraFusion Platform{% endblock %}
+
+{% block head_extras %}
+<style>
+  .agent-card {
+    transition: transform 0.2s ease-in-out;
+  }
+  .agent-card:hover {
+    transform: translateY(-5px);
+  }
+  .card-header-custom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .capability-badge {
+    font-size: 0.8rem;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+  .agent-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2">AI Agents</h1>
+    <div>
+      <a href="#" class="btn btn-outline-info me-2" data-bs-toggle="modal" data-bs-target="#runAgentModal">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+          <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+        </svg>
+        Run Agent
+      </a>
+    </div>
+  </div>
+
+  <!-- System Status -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-dark">
+        <div class="card-body">
+          <h5 class="card-title">Agents Available</h5>
+          <p class="card-text display-6" id="agents-count">{{ agents|length }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-dark">
+        <div class="card-body">
+          <h5 class="card-title">Anthropic Agents</h5>
+          <p class="card-text display-6" id="anthropic-count">{{ anthropic_count }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-dark">
+        <div class="card-body">
+          <h5 class="card-title">OpenAI Agents</h5>
+          <p class="card-text display-6" id="openai-count">{{ openai_count }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-dark">
+        <div class="card-body">
+          <h5 class="card-title">Specialized Agents</h5>
+          <p class="card-text display-6" id="specialized-count">{{ specialized_count }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent Cards -->
+  <h2 class="h4 mb-3">Available Agents</h2>
+
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for agent in agents %}
+    <div class="col">
+      <div class="card h-100 agent-card">
+        <div class="card-header card-header-custom">
+          <span>
+            {% if "openai" in agent.id %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cpu agent-icon" viewBox="0 0 16 16">
+              <path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14a2.5 2.5 0 0 1-2.5 2.5v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0zm-.5 3A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13h7a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 11.5 3h-7zM5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5v-3zM6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+            </svg>
+            {% elif "anthropic" in agent.id %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-journal-text agent-icon" viewBox="0 0 16 16">
+              <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
+              <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
+              <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z"/>
+            </svg>
+            {% else %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-gear agent-icon" viewBox="0 0 16 16">
+              <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+              <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+            </svg>
+            {% endif %}
+            {{ agent.id }}
+          </span>
+          <span class="badge bg-info">{{ agent.type }}</span>
+        </div>
+        <div class="card-body">
+          <p class="card-text">{{ agent.description }}</p>
+          <div class="mb-3">
+            <h6 class="card-subtitle text-muted mb-2">Capabilities:</h6>
+            <div>
+              {% for capability in agent.capabilities %}
+              <span class="badge bg-secondary capability-badge">{{ capability.name }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          <button class="btn btn-sm btn-outline-primary test-agent-btn" 
+                  data-agent-id="{{ agent.id }}" 
+                  data-bs-toggle="modal" 
+                  data-bs-target="#testAgentModal">
+            Test Agent
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Run Agent Modal -->
+  <div class="modal fade" id="runAgentModal" tabindex="-1" aria-labelledby="runAgentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="runAgentModalLabel">Run AI Agent</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="runAgentForm">
+            <div class="mb-3">
+              <label for="agentSelect" class="form-label">Select Agent</label>
+              <select class="form-select" id="agentSelect" required>
+                <option value="" selected disabled>Choose an agent...</option>
+                {% for agent in agents %}
+                <option value="{{ agent.id }}">{{ agent.id }} ({{ agent.type }})</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="agentPrompt" class="form-label">Prompt / Input Data</label>
+              <textarea class="form-control" id="agentPrompt" rows="5" required
+                placeholder="Enter your prompt or data for the agent to process..."></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="agentOptions" class="form-label">Options (JSON)</label>
+              <textarea class="form-control" id="agentOptions" rows="3" 
+                placeholder='{"temperature": 0.7}'></textarea>
+              <div class="form-text">Optional: Provide configuration options in JSON format</div>
+            </div>
+          </form>
+          <div id="agentResponseContainer" class="d-none">
+            <h6>Agent Response:</h6>
+            <div class="card bg-dark mb-3">
+              <div class="card-body">
+                <pre id="agentResponse" class="mb-0"></pre>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end">
+              <button class="btn btn-sm btn-outline-info" id="copyResponseBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+                  <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                  <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                </svg>
+                Copy
+              </button>
+            </div>
+          </div>
+          <div id="runAgentSpinner" class="text-center d-none my-4">
+            <div class="spinner-border text-info" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Processing your request...</p>
+          </div>
+          <div id="runAgentError" class="alert alert-danger d-none" role="alert">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="runAgentBtn">Run Agent</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test Agent Modal -->
+  <div class="modal fade" id="testAgentModal" tabindex="-1" aria-labelledby="testAgentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="testAgentModalLabel">Test Agent</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="testAgentForm">
+            <input type="hidden" id="testAgentId" value="">
+            <div class="mb-3">
+              <label for="testAgentPrompt" class="form-label">Test Prompt</label>
+              <textarea class="form-control" id="testAgentPrompt" rows="3" required></textarea>
+            </div>
+          </form>
+          <div id="testAgentResponseContainer" class="d-none">
+            <h6>Agent Response:</h6>
+            <div class="card bg-dark mb-3">
+              <div class="card-body">
+                <pre id="testAgentResponse" class="mb-0"></pre>
+              </div>
+            </div>
+          </div>
+          <div id="testAgentSpinner" class="text-center d-none my-4">
+            <div class="spinner-border text-info" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Testing agent...</p>
+          </div>
+          <div id="testAgentError" class="alert alert-danger d-none" role="alert">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="testAgentBtn">Run Test</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Set up test agent button listeners
+    document.querySelectorAll('.test-agent-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const agentId = this.getAttribute('data-agent-id');
+        document.getElementById('testAgentId').value = agentId;
+        
+        // Set default prompt based on agent type
+        let defaultPrompt = "";
+        if (agentId.includes('geospatial')) {
+          defaultPrompt = "Analyze the impact of building a solar farm near wetlands at coordinates 37.7749° N, 122.4194° W.";
+        } else if (agentId.includes('document')) {
+          defaultPrompt = "Extract key information from this zoning document: The property (Parcel #12345) is zoned R-2 Residential with a minimum lot size of 5,000 sq ft.";
+        } else if (agentId.includes('image')) {
+          defaultPrompt = "Identify features in this satellite image of an urban area with several high-rise buildings and a park.";
+        } else if (agentId.includes('decision')) {
+          defaultPrompt = "Evaluate whether to approve a variance request for building height in a commercial zone adjacent to residential properties.";
+        } else {
+          defaultPrompt = "Analyze this geospatial data and provide insights.";
+        }
+        
+        document.getElementById('testAgentPrompt').value = defaultPrompt;
+      });
+    });
+    
+    // Test agent form submission
+    document.getElementById('testAgentBtn').addEventListener('click', function() {
+      const agentId = document.getElementById('testAgentId').value;
+      const prompt = document.getElementById('testAgentPrompt').value;
+      
+      if (!agentId || !prompt) {
+        showTestAgentError("Please provide a valid prompt");
+        return;
+      }
+      
+      // Show spinner, hide response and error
+      document.getElementById('testAgentSpinner').classList.remove('d-none');
+      document.getElementById('testAgentResponseContainer').classList.add('d-none');
+      document.getElementById('testAgentError').classList.add('d-none');
+      
+      // Call API to test agent
+      fetch(`/api/ai/process/${agentId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          data: prompt,
+          options: { temperature: 0.7 }
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Hide spinner
+        document.getElementById('testAgentSpinner').classList.add('d-none');
+        
+        if (data.status === 'success' && data.result.success) {
+          // Show response
+          const responseContent = typeof data.result.content === 'string' 
+            ? data.result.content 
+            : JSON.stringify(data.result, null, 2);
+            
+          document.getElementById('testAgentResponse').textContent = responseContent;
+          document.getElementById('testAgentResponseContainer').classList.remove('d-none');
+        } else {
+          // Show error
+          showTestAgentError(data.result.error || "Failed to process with agent");
+        }
+      })
+      .catch(error => {
+        // Hide spinner and show error
+        document.getElementById('testAgentSpinner').classList.add('d-none');
+        showTestAgentError("Error connecting to agent: " + error.message);
+      });
+    });
+    
+    // Run agent form submission
+    document.getElementById('runAgentBtn').addEventListener('click', function() {
+      const agentId = document.getElementById('agentSelect').value;
+      const prompt = document.getElementById('agentPrompt').value;
+      let options = {};
+      
+      try {
+        const optionsText = document.getElementById('agentOptions').value;
+        if (optionsText) {
+          options = JSON.parse(optionsText);
+        }
+      } catch (e) {
+        showRunAgentError("Invalid JSON in options field");
+        return;
+      }
+      
+      if (!agentId || !prompt) {
+        showRunAgentError("Please select an agent and provide a prompt");
+        return;
+      }
+      
+      // Show spinner, hide response and error
+      document.getElementById('runAgentSpinner').classList.remove('d-none');
+      document.getElementById('agentResponseContainer').classList.add('d-none');
+      document.getElementById('runAgentError').classList.add('d-none');
+      
+      // Call API to run agent
+      fetch(`/api/ai/process/${agentId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          data: prompt,
+          options: options
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Hide spinner
+        document.getElementById('runAgentSpinner').classList.add('d-none');
+        
+        if (data.status === 'success' && data.result.success) {
+          // Show response
+          const responseContent = typeof data.result.content === 'string' 
+            ? data.result.content 
+            : JSON.stringify(data.result, null, 2);
+            
+          document.getElementById('agentResponse').textContent = responseContent;
+          document.getElementById('agentResponseContainer').classList.remove('d-none');
+        } else {
+          // Show error
+          showRunAgentError(data.result.error || "Failed to process with agent");
+        }
+      })
+      .catch(error => {
+        // Hide spinner and show error
+        document.getElementById('runAgentSpinner').classList.add('d-none');
+        showRunAgentError("Error connecting to agent: " + error.message);
+      });
+    });
+    
+    // Copy response to clipboard
+    document.getElementById('copyResponseBtn').addEventListener('click', function() {
+      const responseText = document.getElementById('agentResponse').textContent;
+      navigator.clipboard.writeText(responseText).then(() => {
+        const originalText = this.innerHTML;
+        this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/></svg> Copied!';
+        setTimeout(() => {
+          this.innerHTML = originalText;
+        }, 2000);
+      });
+    });
+    
+    function showTestAgentError(message) {
+      const errorElement = document.getElementById('testAgentError');
+      errorElement.textContent = message;
+      errorElement.classList.remove('d-none');
+    }
+    
+    function showRunAgentError(message) {
+      const errorElement = document.getElementById('runAgentError');
+      errorElement.textContent = message;
+      errorElement.classList.remove('d-none');
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,660 @@
+{% extends "base.html" %}
+
+{% block title %}AI Agents Documentation - TerraFusion Platform{% endblock %}
+
+{% block head_extras %}
+<style>
+  .doc-section {
+    margin-bottom: 2rem;
+  }
+  .code-block {
+    background-color: #2d2d2d;
+    border-radius: 4px;
+    padding: 1rem;
+    margin: 1rem 0;
+    font-family: monospace;
+    overflow-x: auto;
+  }
+  .api-method {
+    font-weight: 600;
+    background-color: #343a40;
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    margin-right: 0.5rem;
+  }
+  .method-get {
+    color: #61affe;
+  }
+  .method-post {
+    color: #49cc90;
+  }
+  .toc-link {
+    display: block;
+    padding: 0.25rem 0;
+    text-decoration: none;
+    color: var(--bs-body-color);
+  }
+  .toc-link:hover {
+    color: var(--bs-info);
+  }
+  .toc-link.active {
+    color: var(--bs-info);
+    font-weight: 600;
+  }
+  .sticky-toc {
+    position: sticky;
+    top: 1rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex align-items-center mb-4">
+    <a href="/ai/agents" class="btn btn-sm btn-outline-secondary me-3">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+      </svg>
+      Back to Agents
+    </a>
+    <h1 class="h2 mb-0">AI Agents Documentation</h1>
+  </div>
+
+  <div class="row">
+    <!-- Table of Contents Sidebar -->
+    <div class="col-md-3">
+      <div class="card sticky-toc">
+        <div class="card-header">
+          <h5 class="mb-0">Contents</h5>
+        </div>
+        <div class="card-body">
+          <nav id="tableOfContents">
+            <a class="toc-link" href="#introduction">Introduction</a>
+            <a class="toc-link" href="#agent-types">Agent Types</a>
+            <a class="toc-link" href="#api-reference">API Reference</a>
+            <a class="toc-link" href="#using-agents">Using Agents</a>
+            <a class="toc-link" href="#extending">Extending Agents</a>
+            <a class="toc-link" href="#error-handling">Error Handling</a>
+            <a class="toc-link" href="#best-practices">Best Practices</a>
+            <a class="toc-link" href="#examples">Code Examples</a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Documentation Content -->
+    <div class="col-md-9">
+      <!-- Introduction -->
+      <section id="introduction" class="doc-section">
+        <h2>Introduction</h2>
+        <p>
+          The TerraFusion Platform includes a sophisticated AI agent system designed to handle
+          various geospatial data processing, analysis, and decision support tasks. These agents
+          leverage advanced language models from OpenAI and Anthropic to perform specialized
+          operations on geographic data, documents, and imagery.
+        </p>
+        <p>
+          AI agents are designed to be modular, extensible, and easy to integrate into
+          workflows. Each agent specializes in a particular domain and provides a set of capabilities
+          that can be accessed through a unified API.
+        </p>
+      </section>
+
+      <!-- Agent Types -->
+      <section id="agent-types" class="doc-section">
+        <h2>Agent Types</h2>
+        <p>
+          The TerraFusion Platform includes several types of AI agents:
+        </p>
+
+        <div class="card mb-3">
+          <div class="card-header bg-dark">
+            <h5 class="mb-0">OpenAI Agents</h5>
+          </div>
+          <div class="card-body">
+            <p>
+              OpenAI agents use the GPT-4o model to perform various geospatial tasks:
+            </p>
+            <ul>
+              <li>
+                <strong>Geospatial Analysis</strong> - Analyzes geographic data, identifies patterns, and extracts insights
+              </li>
+              <li>
+                <strong>Image Recognition</strong> - Identifies features, structures, and patterns in satellite/aerial imagery
+              </li>
+              <li>
+                <strong>Visualization</strong> - Generates visualization concepts and data presentation recommendations
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header bg-dark">
+            <h5 class="mb-0">Anthropic Agents</h5>
+          </div>
+          <div class="card-body">
+            <p>
+              Anthropic agents use the Claude 3.5 Sonnet model to perform document-focused tasks:
+            </p>
+            <ul>
+              <li>
+                <strong>Document Analysis</strong> - Analyzes complex documents and extracts structured information
+              </li>
+              <li>
+                <strong>Decision Support</strong> - Provides guidance for complex geospatial planning scenarios
+              </li>
+              <li>
+                <strong>Data Extraction</strong> - Extracts structured data from unstructured text sources
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header bg-dark">
+            <h5 class="mb-0">Specialized Agents</h5>
+          </div>
+          <div class="card-body">
+            <p>
+              In addition to the base agents, TerraFusion includes specialized agents for specific tasks:
+            </p>
+            <ul>
+              <li>
+                <strong>ZoningAnalysisAgent</strong> - Analyzes zoning regulations and evaluates land use compatibility
+              </li>
+              <li>
+                <strong>EnvironmentalImpactAgent</strong> - Assesses environmental impacts of development projects
+              </li>
+              <li>
+                <strong>GeoParsingAgent</strong> - Extracts and validates geographic coordinates and locations from text
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- API Reference -->
+      <section id="api-reference" class="doc-section">
+        <h2>API Reference</h2>
+        <p>
+          The AI agent API provides several endpoints for interacting with agents:
+        </p>
+
+        <div class="card mb-3">
+          <div class="card-header bg-dark">
+            <h5 class="mb-0">List Available Agents</h5>
+          </div>
+          <div class="card-body">
+            <p>
+              <span class="api-method method-get">GET</span>
+              <code>/api/ai/agents</code>
+            </p>
+            <p>Returns a list of all available AI agents and their capabilities.</p>
+            <h6>Response Example:</h6>
+            <div class="code-block">
+<pre>{
+  "status": "success",
+  "agents": [
+    {
+      "id": "openai_geospatial",
+      "type": "geospatial_analysis",
+      "description": "Specializes in analyzing geospatial data...",
+      "capabilities": [
+        {
+          "name": "geospatial_analysis",
+          "description": "Analyze geospatial data and provide insights"
+        },
+        ...
+      ]
+    },
+    ...
+  ]
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header bg-dark">
+            <h5 class="mb-0">Process Data with Agent</h5>
+          </div>
+          <div class="card-body">
+            <p>
+              <span class="api-method method-post">POST</span>
+              <code>/api/ai/process/{agent_id}</code>
+            </p>
+            <p>Process data with a specific agent identified by <code>agent_id</code>.</p>
+            <h6>Request Body:</h6>
+            <div class="code-block">
+<pre>{
+  "data": "Text or data to process",
+  "options": {
+    "temperature": 0.7,
+    "other_option": "value"
+  }
+}</pre>
+            </div>
+            <h6>Response Example:</h6>
+            <div class="code-block">
+<pre>{
+  "status": "success",
+  "result": {
+    "agent_id": "openai_geospatial",
+    "capability": "geospatial_analysis",
+    "content": "Analysis result...",
+    "model": "gpt-4o",
+    "success": true
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header bg-dark">
+            <h5 class="mb-0">Process by Capability</h5>
+          </div>
+          <div class="card-body">
+            <p>
+              <span class="api-method method-post">POST</span>
+              <code>/api/ai/capability/{capability_name}</code>
+            </p>
+            <p>Process data using any agent that supports the specified capability.</p>
+            <h6>Request Body:</h6>
+            <div class="code-block">
+<pre>{
+  "data": "Text or data to process",
+  "options": {
+    "temperature": 0.7,
+    "provider_preference": "anthropic"
+  }
+}</pre>
+            </div>
+            <p>The <code>provider_preference</code> option can be used to specify a preferred provider (openai, anthropic) if multiple agents support the capability.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Using Agents -->
+      <section id="using-agents" class="doc-section">
+        <h2>Using Agents</h2>
+        <p>
+          There are several ways to interact with AI agents in the TerraFusion Platform:
+        </p>
+
+        <div class="card mb-3">
+          <div class="card-header bg-dark">
+            <h5 class="mb-0">Web Interface</h5>
+          </div>
+          <div class="card-body">
+            <p>
+              The AI Agents section of the TerraFusion Platform provides a user-friendly interface to:
+            </p>
+            <ul>
+              <li>Browse available agents and their capabilities</li>
+              <li>Test agents with custom inputs</li>
+              <li>View agent responses and interaction history</li>
+              <li>Copy and use agent outputs in other applications</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header bg-dark">
+            <h5 class="mb-0">REST API</h5>
+          </div>
+          <div class="card-body">
+            <p>
+              For programmatic access, use the REST API as described in the API Reference section.
+              This allows integration with external systems and automation workflows.
+            </p>
+            <h6>Example with cURL:</h6>
+            <div class="code-block">
+<pre>curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"data": "Analyze the impact of building a solar farm near wetlands.", "options": {"temperature": 0.7}}' \
+  http://localhost:5000/api/ai/process/openai_geospatial</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header bg-dark">
+            <h5 class="mb-0">Python SDK</h5>
+          </div>
+          <div class="card-body">
+            <p>
+              The TerraFusion Python SDK provides a convenient way to interact with AI agents 
+              in Python code:
+            </p>
+            <div class="code-block">
+<pre>from terrafusion.clients import AIAgentClient
+
+# Initialize client
+agent_client = AIAgentClient()
+
+# List available agents
+agents = agent_client.list_agents()
+
+# Process data with a specific agent
+result = agent_client.process(
+    agent_id="anthropic_document",
+    data="Extract key information from this zoning document...",
+    options={"temperature": 0.7}
+)
+
+# Print result
+print(result["content"])</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Extending Agents -->
+      <section id="extending" class="doc-section">
+        <h2>Extending Agents</h2>
+        <p>
+          The AI agent system is designed to be extensible. You can create custom agents
+          to handle specialized tasks:
+        </p>
+
+        <div class="card">
+          <div class="card-header bg-dark">
+            <h5 class="mb-0">Creating a Custom Agent</h5>
+          </div>
+          <div class="card-body">
+            <p>
+              To create a custom agent, subclass the appropriate base agent class and
+              implement the required methods:
+            </p>
+            <div class="code-block">
+<pre>from services.ai_agents import BaseAgent, AgentType
+from services.ai_agents.openai_agent import OpenAIAgent
+
+class CustomSpatialAgent(OpenAIAgent):
+    """Custom agent for specialized spatial analysis"""
+    
+    def __init__(self):
+        """Initialize the agent"""
+        super().__init__(
+            agent_id="custom_spatial_agent",
+            agent_type=AgentType.GEOSPATIAL_ANALYSIS,
+            description="Specialized agent for detailed spatial analysis"
+        )
+        
+        # Register capabilities
+        self.register_capability(
+            "terrain_analysis", 
+            "Analyze terrain features and topography"
+        )
+        
+    async def process(self, input_data, options=None):
+        """Process input data with the agent"""
+        # Customize the processing logic
+        # ...
+        
+        # Call parent class process method with enhanced prompt
+        return await super().process(enhanced_prompt, options)
+        
+# Register with agent manager
+from services.ai_agents.agent_manager import get_agent_manager
+
+async def register_custom_agent():
+    agent_manager = await get_agent_manager()
+    agent_manager.register_agent(CustomSpatialAgent())</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Error Handling -->
+      <section id="error-handling" class="doc-section">
+        <h2>Error Handling</h2>
+        <p>
+          The AI agent system includes robust error handling to manage various failure scenarios:
+        </p>
+
+        <div class="card">
+          <div class="card-header bg-dark">
+            <h5 class="mb-0">Common Error Types</h5>
+          </div>
+          <div class="card-body">
+            <table class="table table-dark">
+              <thead>
+                <tr>
+                  <th>Error Type</th>
+                  <th>Description</th>
+                  <th>Handling Strategy</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Agent Not Found</td>
+                  <td>Requested agent ID doesn't exist</td>
+                  <td>Check available agents and use a valid ID</td>
+                </tr>
+                <tr>
+                  <td>API Rate Limit</td>
+                  <td>External API (OpenAI/Anthropic) rate limit exceeded</td>
+                  <td>Implement exponential backoff retry logic</td>
+                </tr>
+                <tr>
+                  <td>Authentication Error</td>
+                  <td>Invalid or missing API keys</td>
+                  <td>Check environment variables or configuration</td>
+                </tr>
+                <tr>
+                  <td>Input Validation Error</td>
+                  <td>Invalid or malformed input data</td>
+                  <td>Check input data format and content</td>
+                </tr>
+                <tr>
+                  <td>Timeout Error</td>
+                  <td>Request took too long to process</td>
+                  <td>Retry with simplified input or adjust timeout settings</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Best Practices -->
+      <section id="best-practices" class="doc-section">
+        <h2>Best Practices</h2>
+        <p>
+          Follow these best practices for effective use of AI agents:
+        </p>
+
+        <div class="card">
+          <div class="card-header bg-dark">
+            <h5 class="mb-0">Recommendations</h5>
+          </div>
+          <div class="card-body">
+            <ol>
+              <li>
+                <strong>Use the right agent for the task</strong> - Select agents based on their specialization rather than trying to make a general-purpose agent handle all tasks.
+              </li>
+              <li>
+                <strong>Provide clear, specific instructions</strong> - The more specific your input, the better the results from the AI agent.
+              </li>
+              <li>
+                <strong>Implement retry logic</strong> - AI services may have temporary availability issues, so implement robust retry mechanisms.
+              </li>
+              <li>
+                <strong>Cache results when appropriate</strong> - For deterministic queries, cache results to reduce API usage and improve response times.
+              </li>
+              <li>
+                <strong>Validate agent outputs</strong> - Always validate and sanity-check AI-generated outputs before using them in critical workflows.
+              </li>
+              <li>
+                <strong>Monitor usage and costs</strong> - Track API usage to manage costs, especially for models with token-based pricing.
+              </li>
+              <li>
+                <strong>Keep agents updated</strong> - Regularly update agents to use the latest models and capabilities as they become available.
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- Code Examples -->
+      <section id="examples" class="doc-section">
+        <h2>Code Examples</h2>
+        <p>
+          Here are some examples of using AI agents in different contexts:
+        </p>
+
+        <div class="card mb-3">
+          <div class="card-header bg-dark">
+            <h5 class="mb-0">Document Analysis Example</h5>
+          </div>
+          <div class="card-body">
+            <div class="code-block">
+<pre>import asyncio
+import json
+from services.ai_agents.agent_manager import get_agent_manager
+
+async def analyze_zoning_document(document_text):
+    """Analyze a zoning document using the document analysis agent"""
+    # Get agent manager
+    agent_manager = await get_agent_manager()
+    
+    # Process the document with the document analysis agent
+    result = await agent_manager.process_with_agent_id(
+        "anthropic_document",
+        document_text,
+        {"temperature": 0.3}  # Lower temperature for more precise extraction
+    )
+    
+    if result["success"]:
+        # Extract structured data from the analysis
+        analysis = result["content"]
+        print(f"Document Analysis Result:\n{analysis}")
+        return analysis
+    else:
+        print(f"Error analyzing document: {result.get('error')}")
+        return None
+
+# Example usage
+if __name__ == "__main__":
+    document = """
+    NOTICE OF PUBLIC HEARING
+    The Planning Commission will consider a request for rezoning parcel #12345 from 
+    R-1 (Single Family Residential) to C-1 (Neighborhood Commercial) for the purpose 
+    of constructing a retail shopping center. The property is located at 123 Main St.
+    The hearing will be held on June 15, 2025 at 7:00 PM at City Hall.
+    """
+    
+    asyncio.run(analyze_zoning_document(document))</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header bg-dark">
+            <h5 class="mb-0">Spatial Analysis Example</h5>
+          </div>
+          <div class="card-body">
+            <div class="code-block">
+<pre>import asyncio
+from services.ai_agents.agent_manager import get_agent_manager
+
+async def analyze_development_impact(location, project_description):
+    """Analyze the environmental impact of a development project"""
+    # Get agent manager
+    agent_manager = await get_agent_manager()
+    
+    # Craft a detailed prompt
+    prompt = f"""
+    Analyze the potential environmental and community impacts of the following development:
+    
+    Project: {project_description}
+    Location: {location}
+    
+    Please consider:
+    1. Potential environmental impacts (wetlands, wildlife, etc.)
+    2. Community impacts (traffic, noise, property values)
+    3. Compatibility with surrounding land use
+    4. Mitigation recommendations
+    """
+    
+    # Process with geospatial analysis agent
+    result = await agent_manager.process_with_agent_id(
+        "openai_geospatial",
+        prompt,
+        {"temperature": 0.7}
+    )
+    
+    if result["success"]:
+        analysis = result["content"]
+        print(f"Impact Analysis:\n{analysis}")
+        return analysis
+    else:
+        print(f"Error performing analysis: {result.get('error')}")
+        return None
+
+# Example usage
+if __name__ == "__main__":
+    project = "Construction of a 50,000 sq ft shopping center with 200 parking spaces"
+    location = "Corner of Main St and Oak Ave, adjacent to Johnson Creek and residential neighborhood"
+    
+    asyncio.run(analyze_development_impact(location, project))</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Highlight active section in table of contents based on scroll position
+    const sections = document.querySelectorAll('.doc-section');
+    const navLinks = document.querySelectorAll('.toc-link');
+    
+    function updateActiveLink() {
+      let currentSection = '';
+      
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+        
+        if (window.scrollY >= sectionTop - 100) {
+          currentSection = section.getAttribute('id');
+        }
+      });
+      
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${currentSection}`) {
+          link.classList.add('active');
+        }
+      });
+    }
+    
+    window.addEventListener('scroll', updateActiveLink);
+    updateActiveLink();
+    
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 20,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}
