@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}AI Agents - TerraFusion Platform{% endblock %}
+{% block title %}AI Agents - TerraFusion Platform{% endblock title %}
 
 {% block head_extras %}
 <style>
@@ -26,7 +26,7 @@
     margin-right: 8px;
   }
 </style>
-{% endblock %}
+{% endblock head_extras %}
 
 {% block content %}
 <div class="container-fluid">
@@ -235,7 +235,7 @@
     </div>
   </div>
 </div>
-{% endblock %}
+{% endblock content %}
 
 {% block scripts %}
 <script>
@@ -402,4 +402,4 @@
     }
   });
 </script>
-{% endblock %}
+{% endblock scripts %}

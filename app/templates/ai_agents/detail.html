@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ agent.id }} - TerraFusion AI Agents{% endblock %}
+{% block title %}{{ agent.id }} - TerraFusion AI Agents{% endblock title %}
 
 {% block head_extras %}
 <style>
@@ -20,7 +20,7 @@
     overflow-y: auto;
   }
 </style>
-{% endblock %}
+{% endblock head_extras %}
 
 {% block content %}
 <div class="container-fluid">
