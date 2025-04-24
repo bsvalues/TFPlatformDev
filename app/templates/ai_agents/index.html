@@ -5,25 +5,72 @@
 {% block head_extras %}
 <style>
   .agent-card {
-    transition: transform 0.2s ease-in-out;
+    transition: all 0.25s ease-in-out;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
   .agent-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    border-color: rgba(var(--terra-accent-rgb), 0.4);
   }
   .card-header-custom {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(44, 141, 106, 0.2) 0%, rgba(18, 68, 48, 0.4) 100%);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
   }
   .capability-badge {
-    font-size: 0.8rem;
-    margin-right: 0.25rem;
-    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
+    margin-right: 0.3rem;
+    margin-bottom: 0.3rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 30px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
   }
   .agent-icon {
-    width: 24px;
-    height: 24px;
-    margin-right: 8px;
+    width: 26px;
+    height: 26px;
+    margin-right: 10px;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+  }
+  .card-body {
+    padding: 1.25rem;
+  }
+  .btn-outline-primary {
+    border-color: var(--terra-primary);
+    color: var(--terra-primary);
+  }
+  .btn-outline-primary:hover {
+    background-color: var(--terra-primary);
+    color: white;
+  }
+  .display-6 {
+    color: var(--terra-accent);
+    font-weight: 600;
+  }
+  .agent-model {
+    font-size: 0.8rem;
+    color: #9ea9b5;
+    margin-top: 5px;
+  }
+  .stats-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(12, 34, 41, 0.9) 0%, rgba(18, 68, 48, 0.6) 100%);
+  }
+  .stats-icon {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    opacity: 0.15;
+    transform: scale(1.5);
+    color: var(--terra-accent);
   }
 </style>
 {% endblock head_extras %}
@@ -45,7 +92,7 @@
   <!-- System Status -->
   <div class="row mb-4">
     <div class="col-md-3">
-      <div class="card bg-dark">
+      <div class="card stats-card">
         <div class="card-body">
           <h5 class="card-title">Agents Available</h5>
           <p class="card-text display-6" id="agents-count">{{ agents|length }}</p>
@@ -53,26 +100,43 @@
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card bg-dark">
+      <div class="card stats-card">
         <div class="card-body">
           <h5 class="card-title">Anthropic Agents</h5>
           <p class="card-text display-6" id="anthropic-count">{{ anthropic_count }}</p>
+          <div class="stats-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
+              <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
+              <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z"/>
+            </svg>
+          </div>
         </div>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card bg-dark">
+      <div class="card stats-card">
         <div class="card-body">
           <h5 class="card-title">OpenAI Agents</h5>
           <p class="card-text display-6" id="openai-count">{{ openai_count }}</p>
+          <div class="stats-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14a2.5 2.5 0 0 1-2.5 2.5v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0zm-.5 3A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13h7a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 11.5 3h-7zM5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5v-3z"/>
+            </svg>
+          </div>
         </div>
       </div>
     </div>
     <div class="col-md-3">
-      <div class="card bg-dark">
+      <div class="card stats-card">
         <div class="card-body">
           <h5 class="card-title">Specialized Agents</h5>
           <p class="card-text display-6" id="specialized-count">{{ specialized_count }}</p>
+          <div class="stats-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+            </svg>
+          </div>
         </div>
       </div>
     </div>

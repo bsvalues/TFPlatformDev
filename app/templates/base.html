@@ -6,6 +6,63 @@
     <title>{% block title %}TerraFusion Platform{% endblock title %}</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <!-- TerraFusion Custom Styles -->
+    <style>
+        :root {
+            --terra-primary: #2c8d6a;
+            --terra-secondary: #1a5d45;
+            --terra-accent: #48c795;
+            --terra-accent-rgb: 72, 199, 149;
+            --terra-highlight: #6fdfb2;
+            --terra-dark: #124430;
+        }
+        
+        body {
+            background-color: #0c1920;
+        }
+        
+        .navbar-dark {
+            background-color: var(--terra-dark) !important;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .navbar-brand {
+            color: var(--terra-highlight) !important;
+        }
+        
+        .nav-link.active {
+            background-color: var(--terra-primary) !important;
+            color: white !important;
+        }
+        
+        .card {
+            border-color: rgba(255,255,255,0.1);
+            background-color: #0c2229;
+        }
+        
+        .card-header {
+            background-color: rgba(44, 141, 106, 0.2);
+        }
+        
+        .btn-primary {
+            background-color: var(--terra-primary);
+            border-color: var(--terra-primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--terra-secondary);
+            border-color: var(--terra-secondary);
+        }
+        
+        .badge.bg-info {
+            background-color: var(--terra-accent) !important;
+            color: #0c1920;
+        }
+        
+        .badge.bg-secondary {
+            background-color: #2a4d58 !important;
+        }
+    </style>
     {% block head_extras %}{% endblock head_extras %}
 </head>
 <body>
@@ -14,10 +71,14 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-start" style="width: 250px; height: 100vh; position: fixed;">
         <div class="container-fluid flex-column align-items-start p-0">
             <a class="navbar-brand d-flex align-items-center p-3" href="/">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-hexagon me-2" viewBox="0 0 16 16">
-                    <path d="M14 4.577v6.846L8 15l-6-3.577V4.577L8 1l6 3.577zM8.5.134a1 1 0 0 0-1 0l-6 3.577a1 1 0 0 0-.5.866v6.846a1 1 0 0 0 .5.866l6 3.577a1 1 0 0 0 1 0l6-3.577a1 1 0 0 0 .5-.866V4.577a1 1 0 0 0-.5-.866L8.5.134z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                    <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"/>
+                    <path d="M8 3.293L3.707 7.586a1 1 0 0 0-.293.707V13h10V8.293a1 1 0 0 0-.293-.707L8 3.293z"/>
+                    <path d="M7 10h2v2H7v-2z"/>
                 </svg>
-                TerraFusion
+                <span style="font-weight: 600; letter-spacing: 0.5px;">
+                    <span style="color: var(--terra-highlight);">Terra</span><span style="color: #fff;">Fusion</span>
+                </span>
             </a>
             
             <button class="navbar-toggler m-2" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
