@@ -58,14 +58,14 @@
         </div>
     </nav>
     
-    <!-- Main Content -->
+    <!-- Main Content with Navigation -->
     <div style="margin-left: 250px; min-height: 100vh; padding: 1.5rem;">
         {% block content %}{% endblock content %}
     </div>
     {% else %}
-    <!-- Login Page (No Navigation) -->
+    <!-- Login Page Content (No Navigation) -->
     <div class="container mt-5">
-        {% block content %}{% endblock content %}
+        {% block login_content %}{% endblock login_content %}
     </div>
     {% endif %}
     
