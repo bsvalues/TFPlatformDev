@@ -60,12 +60,12 @@
     
     <!-- Main Content -->
     <div style="margin-left: 250px; min-height: 100vh; padding: 1.5rem;">
-        {% block content %}{% endblock %}
+        {% block content %}{% endblock content %}
     </div>
     {% else %}
     <!-- Login Page (No Navigation) -->
     <div class="container mt-5">
-        {% block content %}{% endblock %}
+        {% block content %}{% endblock content %}
     </div>
     {% endif %}
     
