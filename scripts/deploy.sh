@@ -1,96 +1,105 @@
 #!/bin/bash
-# Deployment script for TerraFusion Platform
-# This script handles deployment to various environments
-
 set -e
 
-# Configuration
-ENV=${1:-"dev"}  # Default to dev environment if not provided
-DOCKER_REGISTRY=${DOCKER_REGISTRY:-"terrafusion"}
-VERSION=${VERSION:-"latest"}
+# TerraFusion Platform Deployment Script
+# This script handles deployment to dev, staging, and production environments
 
-# Determine if we're using Docker Compose or Kubernetes
-DEPLOY_TYPE=${2:-"compose"}  # Default to docker-compose
+# Usage: ./deploy.sh [dev|staging|prod]
 
-echo "Deploying TerraFusion Platform"
-echo "Environment: $ENV"
-echo "Deployment type: $DEPLOY_TYPE"
+# Default to dev if no environment specified
+ENVIRONMENT=${1:-dev}
+TIMESTAMP=$(date +%Y%m%d%H%M%S)
+DOCKER_REGISTRY="terrafusion"
+IMAGE_NAME="terrafusion"
 
-# Build the Docker image
-echo "Building Docker image..."
-docker build -t ${DOCKER_REGISTRY}/terrafusion:${VERSION} .
+echo "🚀 Starting TerraFusion Platform deployment to $ENVIRONMENT environment"
 
-# Push the Docker image if we're using Kubernetes
-if [ "$DEPLOY_TYPE" == "k8s" ]; then
-    echo "Pushing Docker image to registry..."
-    docker push ${DOCKER_REGISTRY}/terrafusion:${VERSION}
+# Validate environment
+if [[ "$ENVIRONMENT" != "dev" && "$ENVIRONMENT" != "staging" && "$ENVIRONMENT" != "prod" ]]; then
+  echo "❌ Invalid environment: $ENVIRONMENT"
+  echo "Usage: ./deploy.sh [dev|staging|prod]"
+  exit 1
 fi
 
-# Deploy based on deployment type
-if [ "$DEPLOY_TYPE" == "compose" ]; then
-    echo "Deploying with Docker Compose..."
-    
-    # Ensure .env file exists
-    if [ ! -f .env ]; then
-        echo "Error: .env file not found"
-        echo "Please create a .env file with required environment variables"
-        exit 1
-    fi
-    
-    # Deploy with Docker Compose
-    docker-compose -f docker-compose.yml -f docker-compose.${ENV}.yml up -d
-    
-    echo "Deployment completed with Docker Compose"
-    
-elif [ "$DEPLOY_TYPE" == "k8s" ]; then
-    echo "Deploying with Kubernetes..."
-    
-    # Check for kubectl
-    if ! command -v kubectl &> /dev/null; then
-        echo "Error: kubectl not found"
-        echo "Please install kubectl: https://kubernetes.io/docs/tasks/tools/install-kubectl/"
-        exit 1
-    fi
-    
-    # Create namespace if it doesn't exist
-    NAMESPACE="terrafusion-${ENV}"
-    if ! kubectl get namespace ${NAMESPACE} &> /dev/null; then
-        echo "Creating namespace: ${NAMESPACE}"
-        kubectl create namespace ${NAMESPACE}
-    fi
-    
-    # Apply Kubernetes manifests
-    echo "Applying Kubernetes manifests for ${ENV} environment..."
-    
-    # Check for kustomize
-    if command -v kustomize &> /dev/null; then
-        echo "Using kustomize..."
-        kustomize build k8s/overlays/${ENV} | kubectl apply -f -
-    else
-        echo "Using kubectl apply -k..."
-        kubectl apply -k k8s/overlays/${ENV}
-    fi
-    
-    echo "Kubernetes deployment completed"
-    
-    # Wait for deployment to complete
-    echo "Waiting for deployment to complete..."
-    kubectl rollout status deployment/terrafusion-api -n ${NAMESPACE}
-    
-    # Display service information
-    echo "Service information:"
-    kubectl get svc -n ${NAMESPACE}
-    
-    # Display ingress information if it exists
-    if kubectl get ingress -n ${NAMESPACE} &> /dev/null; then
-        echo "Ingress information:"
-        kubectl get ingress -n ${NAMESPACE}
-    fi
-    
+# Set tag based on environment
+if [ "$ENVIRONMENT" == "prod" ]; then
+  TAG="latest"
 else
-    echo "Error: Unknown deployment type: $DEPLOY_TYPE"
-    echo "Supported types: compose, k8s"
-    exit 1
+  TAG="$ENVIRONMENT"
 fi
 
-echo "Deployment completed successfully"
+# Build Docker image
+echo "🔨 Building Docker image: $DOCKER_REGISTRY/$IMAGE_NAME:$TAG"
+docker build -t $DOCKER_REGISTRY/$IMAGE_NAME:$TAG .
+
+# Push image to registry
+echo "⬆️ Pushing image to registry"
+docker push $DOCKER_REGISTRY/$IMAGE_NAME:$TAG
+
+# Deploy to environment
+echo "📦 Deploying to $ENVIRONMENT environment"
+if [ "$ENVIRONMENT" == "dev" ]; then
+  # Deploy to development environment
+  docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+elif [ "$ENVIRONMENT" == "staging" ]; then
+  # Deploy to staging environment using Docker Swarm or Kubernetes
+  if command -v kubectl &> /dev/null; then
+    echo "🔄 Deploying to Kubernetes staging environment"
+    kubectl apply -k k8s/overlays/staging/
+    kubectl rollout status deployment/terrafusion-api -n terrafusion-staging
+  else
+    echo "🔄 Deploying to Docker Swarm staging environment"
+    docker stack deploy -c docker-compose.yml -c docker-compose.staging.yml terrafusion-staging
+  fi
+elif [ "$ENVIRONMENT" == "prod" ]; then
+  # Deploy to production environment using Kubernetes
+  if command -v kubectl &> /dev/null; then
+    echo "🔄 Deploying to Kubernetes production environment"
+    kubectl apply -k k8s/overlays/prod/
+    kubectl rollout status deployment/terrafusion-api -n terrafusion-prod
+  else
+    echo "❌ Production deployment requires Kubernetes. Please install kubectl."
+    exit 1
+  fi
+fi
+
+# Run database migrations
+echo "📊 Running database migrations"
+if [ "$ENVIRONMENT" == "dev" ]; then
+  # Run local migrations
+  docker-compose exec web flask db upgrade
+else
+  # Run migrations in the deployed environment
+  if command -v kubectl &> /dev/null; then
+    PODS=$(kubectl get pods -n terrafusion-$ENVIRONMENT -l app=terrafusion-api -o jsonpath="{.items[0].metadata.name}")
+    kubectl exec -it $PODS -n terrafusion-$ENVIRONMENT -- flask db upgrade
+  else
+    # Fallback for Docker Swarm
+    docker exec $(docker ps -q -f name=terrafusion_web) flask db upgrade
+  fi
+fi
+
+echo "✅ Deployment to $ENVIRONMENT completed successfully!"
+
+# Run smoke tests
+echo "🔍 Running smoke tests"
+ENDPOINT=""
+if [ "$ENVIRONMENT" == "dev" ]; then
+  ENDPOINT="http://localhost:5000"
+elif [ "$ENVIRONMENT" == "staging" ]; then
+  ENDPOINT="https://staging.terrafusion.example.com"
+elif [ "$ENVIRONMENT" == "prod" ]; then
+  ENDPOINT="https://terrafusion.example.com"
+fi
+
+# Simple curl test to check if the API is responding
+curl -s -o /dev/null -w "%{http_code}" $ENDPOINT/health | grep 200 > /dev/null
+if [ $? -eq 0 ]; then
+  echo "✅ Health check passed!"
+else
+  echo "❌ Health check failed!"
+  echo "Please check the deployment logs for more information."
+  exit 1
+fi
+
+echo "🎉 TerraFusion Platform deployed to $ENVIRONMENT successfully!"

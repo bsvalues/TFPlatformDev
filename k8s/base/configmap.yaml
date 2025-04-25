@@ -3,7 +3,72 @@ kind: ConfigMap
 metadata:
   name: terrafusion-config
 data:
-  PGHOST: "postgres"
-  PGPORT: "5432"
-  PGUSER: "postgres"
-  PGDATABASE: "terrafusion"
+  flask_env: "production"
+  api_timeout: "60"
+  log_level: "INFO"
+  enable_metrics: "true"
+  metrics_port: "9090"
+  max_workers: "4"
+  cache_ttl: "3600"
+  cors_origins: "*"
+  terrafusion-config.json: |
+    {
+      "services": {
+        "terra_flow": {
+          "enabled": true,
+          "route_prefix": "/api/flow",
+          "workers": 2
+        },
+        "terra_map": {
+          "enabled": true,
+          "route_prefix": "/api/map",
+          "workers": 2
+        },
+        "terra_insight": {
+          "enabled": true,
+          "route_prefix": "/api/insight",
+          "workers": 2
+        },
+        "terra_audit": {
+          "enabled": true,
+          "route_prefix": "/api/audit",
+          "workers": 1
+        }
+      },
+      "ai_agents": {
+        "openai": {
+          "geospatial_analysis": {
+            "model": "gpt-4o",
+            "temperature": 0.2,
+            "max_tokens": 2048
+          },
+          "image_recognition": {
+            "model": "gpt-4o",
+            "temperature": 0.0,
+            "max_tokens": 1024
+          },
+          "visualization": {
+            "model": "gpt-4o",
+            "temperature": 0.7,
+            "max_tokens": 2048
+          }
+        },
+        "anthropic": {
+          "document_analysis": {
+            "model": "claude-3-5-sonnet-20241022",
+            "temperature": 0.2,
+            "max_tokens": 4096
+          },
+          "decision_support": {
+            "model": "claude-3-5-sonnet-20241022",
+            "temperature": 0.1,
+            "max_tokens": 4096
+          },
+          "data_extraction": {
+            "model": "claude-3-5-sonnet-20241022",
+            "temperature": 0.0,
+            "max_tokens": 8192
+          }
+        }
+      }
+    }

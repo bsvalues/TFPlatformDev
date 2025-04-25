@@ -2,20 +2,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: terrafusion-api
-  labels:
-    app: terrafusion
-    component: api
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: terrafusion
       component: api
-  strategy:
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -24,75 +16,74 @@ spec:
     spec:
       containers:
       - name: api
-        image: ${DOCKER_REGISTRY}/terrafusion:latest
-        imagePullPolicy: Always
+        image: terrafusion/terrafusion:latest
         ports:
         - containerPort: 5000
-          name: http
         env:
         - name: PGHOST
           valueFrom:
-            configMapKeyRef:
-              name: terrafusion-config
-              key: PGHOST
+            secretKeyRef:
+              name: db-credentials
+              key: host
         - name: PGPORT
           valueFrom:
-            configMapKeyRef:
-              name: terrafusion-config
-              key: PGPORT
+            secretKeyRef:
+              name: db-credentials
+              key: port
         - name: PGUSER
           valueFrom:
-            configMapKeyRef:
-              name: terrafusion-config
-              key: PGUSER
-        - name: PGDATABASE
-          valueFrom:
-            configMapKeyRef:
-              name: terrafusion-config
-              key: PGDATABASE
+            secretKeyRef:
+              name: db-credentials
+              key: username
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
-              name: terrafusion-secrets
-              key: PGPASSWORD
-        - name: SESSION_SECRET
+              name: db-credentials
+              key: password
+        - name: PGDATABASE
           valueFrom:
             secretKeyRef:
-              name: terrafusion-secrets
-              key: SESSION_SECRET
+              name: db-credentials
+              key: database
+        - name: FLASK_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: terrafusion-config
+              key: flask_env
         - name: OPENAI_API_KEY
           valueFrom:
             secretKeyRef:
-              name: terrafusion-secrets
-              key: OPENAI_API_KEY
+              name: api-keys
+              key: openai_api_key
         - name: ANTHROPIC_API_KEY
           valueFrom:
             secretKeyRef:
-              name: terrafusion-secrets
-              key: ANTHROPIC_API_KEY
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 30
-          periodSeconds: 30
-          timeoutSeconds: 5
-          failureThreshold: 3
+              name: api-keys
+              key: anthropic_api_key
+        - name: MCP_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-keys
+              key: mcp_api_key
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
         readinessProbe:
           httpGet:
             path: /health
-            port: http
+            port: 5000
           initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 3
-          failureThreshold: 3
-        resources:
-          limits:
-            cpu: "1"
-            memory: 1Gi
-          requests:
-            cpu: "0.5"
-            memory: 512Mi
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 20
         volumeMounts:
         - name: config-volume
           mountPath: /app/config
