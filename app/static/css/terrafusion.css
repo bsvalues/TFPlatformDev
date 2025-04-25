@@ -1,85 +1,119 @@
-/* TerraFusion Platform - Main Stylesheet */
+/* TerraFusion Platform - Main Stylesheet (Apple-inspired) */
 :root {
-    /* Primary brand colors */
-    --tf-primary: #2c8d6a;
-    --tf-primary-dark: #1a5d45;
-    --tf-primary-light: #48c795;
-    --tf-accent: #6fdfb2;
+    /* Primary brand colors - Apple-inspired */
+    --tf-primary: #0071e3;       /* Apple's blue */
+    --tf-primary-dark: #0051a3;  /* Darker blue */
+    --tf-primary-light: #40a0ff; /* Lighter blue */
+    --tf-accent: #06c;           /* Secondary blue */
     
-    /* UI color scheme */
-    --tf-background: #0c1920;
-    --tf-background-elevated: #0c2229;
-    --tf-sidebar: #0d2730;
-    --tf-card: #0e2b35;
+    /* UI color scheme - Refined dark mode */
+    --tf-background: #000000;           /* Pure black background */
+    --tf-background-elevated: #1d1d1f;  /* Slightly elevated surfaces */
+    --tf-sidebar: #141414;              /* Sidebar background */
+    --tf-card: #1d1d1f;                 /* Card background */
     
     /* Typography */
-    --tf-text-light: #e4e6e8;
-    --tf-text-muted: #a0a8b0;
-    --tf-text-dark: #1a2830;
+    --tf-text-light: #f5f5f7;      /* Light text on dark */
+    --tf-text-muted: #86868b;      /* Apple's muted text */
+    --tf-text-dark: #1d1d1f;       /* Dark text on light */
+    --tf-text-secondary: #6e6e73;  /* Secondary text color */
     
-    /* Interactive colors */
-    --tf-success: #28a745;
-    --tf-warning: #ffc107;
-    --tf-danger: #dc3545;
-    --tf-info: #17a2b8;
+    /* Interactive colors - more Apple-like */
+    --tf-success: #00c853;
+    --tf-warning: #ff9500;  /* Apple's orange */
+    --tf-danger: #ff3b30;   /* Apple's red */
+    --tf-info: #64d3ff;     /* Light blue */
+    
+    /* Neutral colors */
+    --tf-neutral-100: #f5f5f7;
+    --tf-neutral-200: #e5e5e7;
+    --tf-neutral-300: #d2d2d7;
+    --tf-neutral-400: #a1a1a6;
+    --tf-neutral-500: #86868b;
+    --tf-neutral-600: #6e6e73;
+    --tf-neutral-700: #424245;
+    --tf-neutral-800: #2d2d30;
+    --tf-neutral-900: #1d1d1f;
     
     /* Border colors */
-    --tf-border-light: rgba(255, 255, 255, 0.1);
-    --tf-border-medium: rgba(255, 255, 255, 0.15);
+    --tf-border-light: rgba(210, 210, 215, 0.1);
+    --tf-border-medium: rgba(210, 210, 215, 0.15);
     
-    /* Shadows */
-    --tf-shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.15);
-    --tf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
-    --tf-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35);
+    /* Shadows - Subtle like Apple's UI */
+    --tf-shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.12);
+    --tf-shadow-md: 0 5px 16px rgba(0, 0, 0, 0.15);
+    --tf-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.2);
     
-    /* Transitions */
-    --tf-transition-fast: 0.15s ease;
-    --tf-transition-normal: 0.25s ease;
-    --tf-transition-slow: 0.4s ease;
+    /* Transitions - Smooth and precise */
+    --tf-transition-fast: 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    --tf-transition-normal: 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    --tf-transition-slow: 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
     
-    /* Spacing */
+    /* Spacing - Apple uses precise geometric spacing */
     --tf-spacing-xs: 0.25rem;
     --tf-spacing-sm: 0.5rem;
     --tf-spacing-md: 1rem;
     --tf-spacing-lg: 1.5rem;
     --tf-spacing-xl: 2.5rem;
     
-    /* Border radius */
-    --tf-radius-sm: 4px;
-    --tf-radius-md: 8px;
-    --tf-radius-lg: 12px;
+    /* Border radius - Apple uses consistent, subtle rounding */
+    --tf-radius-sm: 6px;
+    --tf-radius-md: 10px;
+    --tf-radius-lg: 14px;
+    
+    /* Backdrop blur effect values */
+    --tf-blur-sm: 5px;
+    --tf-blur-md: 10px;
+    --tf-blur-lg: 20px;
 }
 
-/* Base styles */
+/* Base styles - Apple-inspired typography and spacing */
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background-color: var(--tf-background);
     color: var(--tf-text-light);
-    line-height: 1.6;
+    line-height: 1.47059;
+    font-weight: 400;
+    letter-spacing: -0.022em;
+    font-synthesis: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
     margin-bottom: var(--tf-spacing-md);
+    letter-spacing: -0.022em;
 }
 
 h1 {
-    font-size: 1.75rem;
+    font-size: 2rem;
     font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+h2 {
+    font-size: 1.5rem;
+    letter-spacing: -0.024em;
+}
+
+h3 {
+    font-size: 1.25rem;
 }
 
 p {
     margin-bottom: var(--tf-spacing-md);
+    font-size: 17px;
 }
 
 a {
-    color: var(--tf-primary-light);
+    color: var(--tf-primary);
     text-decoration: none;
     transition: color var(--tf-transition-fast);
 }
 
 a:hover {
-    color: var(--tf-accent);
+    color: var(--tf-primary-light);
 }
 
 /* Layout */
@@ -95,15 +129,17 @@ a:hover {
     transition: margin-left var(--tf-transition-normal);
 }
 
-/* Navbar/Sidebar */
+/* Navbar/Sidebar - Apple-inspired clean and minimalist navigation */
 .tf-sidebar {
     width: 260px;
     height: 100vh;
     position: fixed;
     left: 0;
     top: 0;
-    background-color: var(--tf-sidebar);
-    border-right: 1px solid var(--tf-border-light);
+    background-color: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(var(--tf-blur-md));
+    -webkit-backdrop-filter: blur(var(--tf-blur-md));
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
     box-shadow: var(--tf-shadow-sm);
     z-index: 1000;
     transition: transform var(--tf-transition-normal);
@@ -112,56 +148,64 @@ a:hover {
 }
 
 .tf-sidebar-brand {
-    padding: var(--tf-spacing-lg);
+    padding: var(--tf-spacing-lg) var(--tf-spacing-lg) var(--tf-spacing-md);
     display: flex;
     align-items: center;
-    border-bottom: 1px solid var(--tf-border-light);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: var(--tf-spacing-md);
 }
 
 .tf-sidebar-brand-text {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 1.25rem;
-    letter-spacing: 0.5px;
+    letter-spacing: -0.01em;
     margin-left: var(--tf-spacing-sm);
 }
 
 .tf-brand-primary {
-    color: var(--tf-accent);
+    color: var(--tf-primary);
+    font-weight: 700;
 }
 
 .tf-brand-secondary {
-    color: white;
+    color: var(--tf-text-light);
 }
 
 .tf-sidebar-menu {
     flex: 1;
     overflow-y: auto;
-    padding: var(--tf-spacing-md) 0;
+    padding: 0;
+    margin: 0 var(--tf-spacing-xs);
 }
 
 .tf-sidebar-footer {
-    padding: var(--tf-spacing-md);
-    border-top: 1px solid var(--tf-border-light);
+    padding: var(--tf-spacing-md) var(--tf-spacing-lg);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin-top: var(--tf-spacing-md);
 }
 
 .tf-nav-link {
     display: flex;
     align-items: center;
-    padding: var(--tf-spacing-sm) var(--tf-spacing-lg);
+    padding: var(--tf-spacing-sm) var(--tf-spacing-md);
     color: var(--tf-text-light);
-    border-radius: 0;
-    transition: background-color var(--tf-transition-fast);
-    margin: var(--tf-spacing-xs) 0;
+    border-radius: var(--tf-radius-md);
+    transition: all var(--tf-transition-fast);
+    margin: var(--tf-spacing-xs) var(--tf-spacing-sm);
+    font-size: 15px;
+    font-weight: 400;
 }
 
 .tf-nav-link:hover {
     background-color: rgba(255, 255, 255, 0.05);
     color: var(--tf-text-light);
+    transform: translateX(2px);
 }
 
 .tf-nav-link.active {
-    background-color: var(--tf-primary);
-    color: white;
+    background-color: rgba(0, 113, 227, 0.15);
+    color: var(--tf-primary);
+    font-weight: 500;
 }
 
 .tf-nav-link-icon {
@@ -169,33 +213,42 @@ a:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
+    opacity: 0.9;
+}
+
+.tf-nav-link.active .tf-nav-link-icon {
+    opacity: 1;
+    color: var(--tf-primary);
 }
 
 .tf-nav-section {
     margin-top: var(--tf-spacing-lg);
-    padding: 0 var(--tf-spacing-lg);
+    padding: 0 var(--tf-spacing-sm);
 }
 
 .tf-nav-section-title {
     font-size: 0.75rem;
     text-transform: uppercase;
-    color: var(--tf-text-muted);
-    font-weight: 600;
-    letter-spacing: 0.05em;
+    color: var(--tf-text-secondary);
+    font-weight: 500;
+    letter-spacing: 0.02em;
     margin-bottom: var(--tf-spacing-sm);
+    padding: 0 var(--tf-spacing-md);
 }
 
-/* Cards */
+/* Cards - Apple-inspired with clean design and subtle effects */
 .tf-card {
     background-color: var(--tf-card);
     border-radius: var(--tf-radius-lg);
-    border: 1px solid var(--tf-border-light);
+    border: none; /* Apple uses no visible borders, just shadows */
     box-shadow: var(--tf-shadow-sm);
     margin-bottom: var(--tf-spacing-lg);
-    transition: transform var(--tf-transition-normal), box-shadow var(--tf-transition-normal);
+    transition: all var(--tf-transition-normal);
     overflow: hidden;
+    -webkit-backdrop-filter: blur(var(--tf-blur-sm));
+    backdrop-filter: blur(var(--tf-blur-sm));
 }
 
 .tf-card:hover {
@@ -205,7 +258,7 @@ a:hover {
 
 .tf-card-header {
     padding: var(--tf-spacing-md) var(--tf-spacing-lg);
-    background-color: rgba(44, 141, 106, 0.15);
+    background-color: rgba(0, 113, 227, 0.08); /* Subtle blue tint like Apple's UI */
     border-bottom: 1px solid var(--tf-border-light);
     display: flex;
     align-items: center;
@@ -215,6 +268,9 @@ a:hover {
 .tf-card-title {
     margin-bottom: 0;
     font-weight: 600;
+    color: var(--tf-text-light);
+    font-size: 1.125rem;
+    letter-spacing: -0.022em;
 }
 
 .tf-card-body {
@@ -223,7 +279,7 @@ a:hover {
 
 .tf-card-footer {
     padding: var(--tf-spacing-md) var(--tf-spacing-lg);
-    background-color: rgba(12, 34, 41, 0.4);
+    background-color: rgba(0, 0, 0, 0.2); /* Dark subtle background */
     border-top: 1px solid var(--tf-border-light);
 }
 
@@ -249,63 +305,97 @@ a:hover {
     margin-bottom: var(--tf-spacing-md);
 }
 
-/* Buttons */
+/* Buttons - Apple-inspired with clean, minimal style */
 .tf-btn {
     border-radius: var(--tf-radius-md);
-    padding: 0.5rem 1rem;
+    padding: 0.625rem 1.25rem; /* Slightly taller buttons like Apple */
     font-weight: 500;
+    font-size: 15px;
+    letter-spacing: -0.01em;
     transition: all var(--tf-transition-fast);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.tf-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0, 125, 250, 0.15);
 }
 
 .tf-btn-primary {
     background-color: var(--tf-primary);
-    border-color: var(--tf-primary);
     color: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .tf-btn-primary:hover {
-    background-color: var(--tf-primary-dark);
-    border-color: var(--tf-primary-dark);
+    background-color: var(--tf-primary-light);
     color: white;
+    transform: translateY(-1px);
+}
+
+.tf-btn-primary:active {
+    background-color: var(--tf-primary-dark);
+    transform: translateY(0);
 }
 
 .tf-btn-outline {
-    background-color: transparent;
+    background-color: rgba(255, 255, 255, 0.08); /* Subtle translucent background */
     color: var(--tf-text-light);
-    border: 1px solid var(--tf-border-medium);
+    backdrop-filter: blur(var(--tf-blur-sm));
+    -webkit-backdrop-filter: blur(var(--tf-blur-sm));
 }
 
 .tf-btn-outline:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.12);
     color: white;
+    transform: translateY(-1px);
 }
 
-/* Forms */
+.tf-btn-outline:active {
+    background-color: rgba(255, 255, 255, 0.05);
+    transform: translateY(0);
+}
+
+/* Forms - Apple-inspired inputs */
 .tf-form-group {
     margin-bottom: var(--tf-spacing-md);
 }
 
 .tf-form-label {
     display: block;
-    margin-bottom: var(--tf-spacing-xs);
+    margin-bottom: var(--tf-spacing-sm);
     font-weight: 500;
+    font-size: 15px;
+    color: var(--tf-text-light);
 }
 
 .tf-form-control {
     width: 100%;
-    padding: 0.5rem 0.75rem;
-    background-color: rgba(12, 34, 41, 0.5);
-    border: 1px solid var(--tf-border-light);
+    padding: 0.75rem 1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: none;
     border-radius: var(--tf-radius-md);
     color: var(--tf-text-light);
+    font-size: 16px;
     transition: all var(--tf-transition-fast);
+    backdrop-filter: blur(var(--tf-blur-sm));
+    -webkit-backdrop-filter: blur(var(--tf-blur-sm));
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .tf-form-control:focus {
-    background-color: rgba(12, 34, 41, 0.7);
-    border-color: var(--tf-primary);
-    box-shadow: 0 0 0 0.25rem rgba(44, 141, 106, 0.25);
+    background-color: rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.1);
     outline: none;
+}
+
+.tf-form-control::placeholder {
+    color: var(--tf-text-secondary);
+    opacity: 0.7;
 }
 
 /* Table styles */
@@ -458,27 +548,66 @@ a:hover {
     }
 }
 
-/* Login page specific */
+/* Login page specific - Apple-inspired, minimalist login experience */
 .tf-login-container {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: var(--tf-spacing-lg);
+    background: #000;
+    background-image: radial-gradient(circle at center, #1d1d1f 0%, #000 70%);
 }
 
 .tf-login-card {
     width: 100%;
-    max-width: 440px;
+    max-width: 420px;
     border-radius: var(--tf-radius-lg);
     overflow: hidden;
     box-shadow: var(--tf-shadow-lg);
+    background-color: rgba(29, 29, 31, 0.7);
+    backdrop-filter: blur(var(--tf-blur-lg));
+    -webkit-backdrop-filter: blur(var(--tf-blur-lg));
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .tf-login-header {
-    background: linear-gradient(135deg, var(--tf-primary) 0%, var(--tf-primary-dark) 100%);
     padding: var(--tf-spacing-xl);
     text-align: center;
+    background: transparent;
+}
+
+.tf-login-header svg {
+    filter: drop-shadow(0 4px 12px rgba(0, 113, 227, 0.3));
+}
+
+.tf-login-header h1 {
+    font-size: 1.75rem;
+    margin-top: var(--tf-spacing-md);
+    margin-bottom: var(--tf-spacing-xs);
+    color: var(--tf-text-light);
+    font-weight: 600;
+}
+
+.tf-login-header p {
+    color: var(--tf-text-secondary);
+    font-size: 1rem;
+}
+
+/* Apple-styled alerts */
+.alert {
+    border: none;
+    border-radius: var(--tf-radius-md);
+    padding: 0.875rem 1rem;
+    font-size: 0.9375rem;
+    margin-bottom: var(--tf-spacing-md);
+    display: flex;
+    align-items: center;
+}
+
+.alert-danger {
+    background-color: rgba(255, 59, 48, 0.1);
+    color: #ff3b30;
 }
 
 /* Accessibility */
