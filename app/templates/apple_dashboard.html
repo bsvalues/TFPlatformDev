@@ -233,34 +233,78 @@
             background-color: rgba(0, 0, 0, 0.15);
         }
         
-        /* Feature card */
+        /* Feature card - with enhanced hover animations and textures */
         .feature-card {
             height: 100%;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+            opacity: 0.06;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .feature-card .card-body {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
         
         .feature-icon {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            margin-bottom: 1.25rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
         }
         
         .feature-title {
-            font-size: 1.125rem;
+            font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
             letter-spacing: -0.022em;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover .feature-title {
+            transform: translateY(-2px);
+            color: white;
         }
         
         .feature-description {
             color: var(--apple-text-secondary);
             font-size: 0.9375rem;
-            margin-bottom: 1.25rem;
+            margin-bottom: 1.5rem;
             letter-spacing: -0.022em;
-            line-height: 1.4;
+            line-height: 1.5;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover .feature-description {
+            color: rgba(255, 255, 255, 0.8);
         }
         
         /* Status indicators */
@@ -339,26 +383,55 @@
             border-bottom: 1px solid var(--apple-border);
             display: flex;
             align-items: center;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
         
         .activity-item:last-child {
             border-bottom: none;
         }
         
+        .activity-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            opacity: 0;
+            z-index: 0;
+            transition: opacity 0.3s ease;
+        }
+        
         .activity-item:hover {
             background-color: rgba(255, 255, 255, 0.03);
+            transform: translateX(5px);
+        }
+        
+        .activity-item:hover::before {
+            opacity: 1;
         }
         
         .activity-icon {
-            width: 36px;
-            height: 36px;
+            width: 42px;
+            height: 42px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-right: 1rem;
             flex-shrink: 0;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+        
+        .activity-item:hover .activity-icon {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
         }
         
         .activity-content {
@@ -926,6 +999,105 @@
                     card.style.boxShadow = '';
                 });
             });
+            
+            // Add Dynamic Typography animations to header title and subtitle
+            const headerTitle = document.querySelector('.header-title');
+            const headerSubtitle = document.querySelector('.header-subtitle');
+            
+            if (headerTitle && headerSubtitle) {
+                // Create wrapper spans for individual characters in title
+                const titleText = headerTitle.textContent;
+                headerTitle.innerHTML = '';
+                
+                // Split by characters but keep the words together for better animation
+                const words = titleText.split(' ');
+                
+                words.forEach((word, wordIndex) => {
+                    const wordSpan = document.createElement('span');
+                    wordSpan.className = 'word';
+                    wordSpan.style.display = 'inline-block';
+                    wordSpan.style.marginRight = wordIndex < words.length - 1 ? '0.4rem' : '0';
+                    
+                    for (let i = 0; i < word.length; i++) {
+                        const charSpan = document.createElement('span');
+                        charSpan.className = 'char';
+                        charSpan.textContent = word[i];
+                        charSpan.style.display = 'inline-block';
+                        charSpan.style.opacity = '0';
+                        charSpan.style.transform = 'translateY(20px)';
+                        charSpan.style.transition = `opacity 0.5s ease, transform 0.5s ease`;
+                        charSpan.style.transitionDelay = `${(wordIndex * 0.1 + i * 0.04)}s`;
+                        wordSpan.appendChild(charSpan);
+                    }
+                    
+                    headerTitle.appendChild(wordSpan);
+                });
+                
+                // Add fade-in animation to subtitle
+                headerSubtitle.style.opacity = '0';
+                headerSubtitle.style.transform = 'translateY(20px)';
+                headerSubtitle.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+                headerSubtitle.style.transitionDelay = '0.5s';
+                
+                // Trigger animations after a short delay
+                setTimeout(() => {
+                    document.querySelectorAll('.char').forEach(char => {
+                        char.style.opacity = '1';
+                        char.style.transform = 'translateY(0)';
+                    });
+                    
+                    headerSubtitle.style.opacity = '1';
+                    headerSubtitle.style.transform = 'translateY(0)';
+                }, 300);
+            }
+            
+            // Add hover animations to activity icons for microinteractions
+            const activityIcons = document.querySelectorAll('.activity-icon');
+            activityIcons.forEach(icon => {
+                icon.addEventListener('mouseenter', () => {
+                    const svg = icon.querySelector('svg');
+                    if (svg) {
+                        svg.style.transition = 'transform 0.3s ease';
+                        svg.style.transform = 'scale(1.15) rotate(5deg)';
+                    }
+                });
+                
+                icon.addEventListener('mouseleave', () => {
+                    const svg = icon.querySelector('svg');
+                    if (svg) {
+                        svg.style.transform = 'scale(1) rotate(0)';
+                    }
+                });
+            });
+            
+            // Add noise texture effect to the main content background
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                // Create noise overlay
+                const noiseOverlay = document.createElement('div');
+                noiseOverlay.className = 'noise-overlay';
+                noiseOverlay.style.position = 'fixed';
+                noiseOverlay.style.top = '0';
+                noiseOverlay.style.left = '0';
+                noiseOverlay.style.width = '100%';
+                noiseOverlay.style.height = '100%';
+                noiseOverlay.style.pointerEvents = 'none';
+                noiseOverlay.style.zIndex = '1';
+                noiseOverlay.style.opacity = '0.04';
+                noiseOverlay.style.backgroundImage = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E\")";
+                
+                // Insert at the beginning of .main-content
+                mainContent.insertBefore(noiseOverlay, mainContent.firstChild);
+                
+                // Make sure main content children are above the noise
+                mainContent.style.position = 'relative';
+                Array.from(mainContent.children).forEach(child => {
+                    if (child !== noiseOverlay) {
+                        child.style.position = 'relative';
+                        child.style.zIndex = '2';
+                    }
+                });
+            }
         });
     </script>
 </body>
