@@ -4,6 +4,7 @@ import asyncio
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
+from prometheus_flask_exporter import PrometheusMetrics
 
 # Setup basic logging
 logging.basicConfig(level=logging.INFO)
@@ -31,6 +32,11 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 
 # Initialize the database with the app
 db.init_app(app)
+
+# Initialize Prometheus metrics
+metrics = PrometheusMetrics(app, group_by='endpoint')
+metrics.info('terrafusion_info', 'TerraFusion Platform Information', 
+             version='1.0.0', service='terrafusion-api')
 
 # Import AI agent routes
 try:
@@ -113,6 +119,8 @@ def etl_process(process_path):
     return jsonify({"status": "success", "message": f"ETL process for {process_path}"})
 
 @app.route('/api/ai/<path:model_path>', methods=['GET', 'POST'])
+@metrics.counter('terrafusion_ai_requests_total', 'Number of AI model requests',
+                labels={'model_path': lambda: request.view_args['model_path']})
 def ai_model(model_path):
     # Simplified AI endpoint
     return jsonify({"status": "success", "message": f"AI model for {model_path}"})
