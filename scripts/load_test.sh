@@ -1,67 +1,99 @@
 #!/bin/bash
 # Load testing script for TerraFusion Platform
-# This script performs load testing using Apache Bench
+# This script runs load tests against the API endpoints
 
 set -e
 
 # Configuration
 HOST=${1:-"localhost:5000"}  # Default to localhost:5000 if not provided
-ENDPOINT=${2:-"/health"}     # Default to health endpoint if not provided
-CONCURRENCY=${3:-10}         # Default concurrency level
-REQUESTS=${4:-1000}          # Default number of requests
-OUTPUT_DIR="load_test_results"
+DURATION=${2:-"30s"}         # Default to 30 seconds duration if not provided
+USERS=${3:-"50"}             # Default to 50 concurrent users if not provided
+TARGET_ENDPOINT=${4:-"/"}    # Default to root endpoint if not provided
 
-# Create output directory if it doesn't exist
-mkdir -p $OUTPUT_DIR
-
-# Generate timestamp for output files
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-OUTPUT_FILE="$OUTPUT_DIR/load_test_${TIMESTAMP}.txt"
-GRAPH_FILE="$OUTPUT_DIR/load_test_${TIMESTAMP}.png"
-
-echo "Starting load test for TerraFusion Platform"
-echo "Host: $HOST"
-echo "Endpoint: $ENDPOINT"
-echo "Concurrency: $CONCURRENCY"
-echo "Requests: $REQUESTS"
-echo "Output file: $OUTPUT_FILE"
-
-# Check if Apache Bench is installed
+# Check if required tools are installed
 if ! command -v ab &> /dev/null; then
-    echo "Apache Bench (ab) is not installed"
-    echo "To install: apt-get install apache2-utils"
+    echo "Apache Benchmark (ab) not found"
+    echo "Please install Apache Benchmark: sudo apt-get install apache2-utils"
     exit 1
 fi
 
-# Run the load test
-echo "Running load test..."
-ab -c $CONCURRENCY -n $REQUESTS -g $OUTPUT_FILE.csv "http://$HOST$ENDPOINT" > $OUTPUT_FILE
-
-# Display summary
-echo "Load test completed"
-echo "Results saved to $OUTPUT_FILE"
-
-# Generate graph if gnuplot is available
-if command -v gnuplot &> /dev/null; then
-    echo "Generating performance graph..."
-    gnuplot <<EOF
-    set terminal png
-    set output "$GRAPH_FILE"
-    set title "TerraFusion Load Test Results ($REQUESTS Requests, $CONCURRENCY Concurrent)"
-    set size 1,0.7
-    set grid y
-    set xlabel "Request"
-    set ylabel "Response Time (ms)"
-    plot "$OUTPUT_FILE.csv" using 9 smooth sbezier with lines title "Response Time"
-EOF
-    echo "Graph saved to $GRAPH_FILE"
+if ! command -v hey &> /dev/null; then
+    echo "Hey load testing tool not found, will use Apache Benchmark only"
+    echo "To install Hey: https://github.com/rakyll/hey"
+    HEY_AVAILABLE=false
 else
-    echo "gnuplot is not installed, skipping graph generation"
-    echo "To install: apt-get install gnuplot"
+    HEY_AVAILABLE=true
 fi
 
-# Display basic statistics
-echo "Basic Statistics:"
-grep "Requests per second" $OUTPUT_FILE
-grep "Time per request" $OUTPUT_FILE | head -1
-grep "Transfer rate" $OUTPUT_FILE
+echo "Starting load tests for TerraFusion Platform"
+echo "Host: $HOST"
+echo "Duration: $DURATION"
+echo "Concurrent users: $USERS"
+echo "Target endpoint: $TARGET_ENDPOINT"
+
+# Check if the server is up
+echo "Checking if server is up..."
+if ! curl -s "http://$HOST/health" | grep -q "healthy"; then
+    echo "Server is not responding or not healthy"
+    echo "Please ensure the server is running before running load tests"
+    exit 1
+fi
+
+echo "Server is up and healthy, starting load tests..."
+
+# Run tests with Apache Benchmark
+echo "----------------------------------------"
+echo "Running Apache Benchmark"
+echo "----------------------------------------"
+ab -n 1000 -c $USERS -t $DURATION http://$HOST$TARGET_ENDPOINT
+
+# Run tests with Hey if available
+if [ "$HEY_AVAILABLE" = true ]; then
+    echo "----------------------------------------"
+    echo "Running Hey load testing tool"
+    echo "----------------------------------------"
+    hey -z $DURATION -c $USERS http://$HOST$TARGET_ENDPOINT
+fi
+
+# Check server health after load test
+echo "----------------------------------------"
+echo "Checking server health after load test"
+echo "----------------------------------------"
+curl -s "http://$HOST/health"
+
+echo "----------------------------------------"
+echo "Load testing completed"
+echo "----------------------------------------"
+
+# Optional: Run more detailed analysis
+echo "Would you like to run a more detailed analysis? (y/n)"
+read -r ANSWER
+if [[ $ANSWER =~ ^[Yy]$ ]]; then
+    echo "----------------------------------------"
+    echo "Running detailed analysis"
+    echo "----------------------------------------"
+    
+    echo "Testing API response time under varying loads..."
+    
+    # Test with different concurrency levels
+    for CONCURRENCY in 10 25 50 100; do
+        echo "Testing with $CONCURRENCY concurrent users..."
+        ab -n 500 -c $CONCURRENCY http://$HOST$TARGET_ENDPOINT
+    done
+    
+    # Test different endpoints if Hey is available
+    if [ "$HEY_AVAILABLE" = true ]; then
+        echo "Testing different endpoints..."
+        
+        ENDPOINTS=("/health" "/api/v1/map" "/api/v1/audit" "/api/v1/flow" "/api/v1/insight")
+        
+        for ENDPOINT in "${ENDPOINTS[@]}"; do
+            echo "Testing endpoint: $ENDPOINT"
+            hey -n 200 -c 20 http://$HOST$ENDPOINT
+        done
+    fi
+    
+    echo "Detailed analysis completed"
+fi
+
+echo "Load testing script completed"

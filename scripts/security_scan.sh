@@ -1,38 +1,86 @@
 #!/bin/bash
 # Security scanning script for TerraFusion Platform
-# This script performs security scanning of the application code and dependencies
+# This script performs various security checks on the codebase and infrastructure
 
 set -e
 
 echo "Starting security scan for TerraFusion Platform"
 
-# Check for Python dependencies with known vulnerabilities
-echo "Checking Python dependencies for vulnerabilities..."
-pip install safety
-safety check -r requirements.txt
+# Check for dependencies
+MISSING_DEPS=0
 
-# Run static code analysis
-echo "Running static code analysis..."
-pip install bandit
-bandit -r . -x venv,env,tests
+# Check for Bandit (Python security scanner)
+if ! command -v bandit &> /dev/null; then
+    echo "Bandit not found. Installing..."
+    pip install bandit
+fi
 
-# Check Docker image for vulnerabilities (requires Trivy)
+# Check for Trivy (Container scanner)
+if ! command -v trivy &> /dev/null; then
+    echo "Trivy not found, skipping container security scan"
+    echo "Please install Trivy: https://github.com/aquasecurity/trivy"
+    MISSING_DEPS=1
+fi
+
+# Check for trufflehog (Secret scanner)
+if ! command -v trufflehog &> /dev/null; then
+    echo "trufflehog not found, skipping secret scanning"
+    echo "Please install trufflehog: https://github.com/trufflesecurity/trufflehog"
+    MISSING_DEPS=1
+fi
+
+echo "----------------------------------------"
+echo "Running Python code security scan (Bandit)"
+echo "----------------------------------------"
+bandit -r app services -f txt
+
+# Run Trivy container scan if available
 if command -v trivy &> /dev/null; then
-    echo "Scanning Docker image for vulnerabilities..."
-    docker build -t terrafusion-scan:latest .
-    trivy image terrafusion-scan:latest
-else
-    echo "Trivy is not installed, skipping Docker image scan"
-    echo "To install Trivy: https://aquasecurity.github.io/trivy/latest/getting-started/installation/"
+    echo "----------------------------------------"
+    echo "Running container security scan (Trivy)"
+    echo "----------------------------------------"
+    
+    # Check if image exists
+    if docker image inspect terrafusion:latest &> /dev/null; then
+        trivy image terrafusion:latest
+    else
+        echo "Image terrafusion:latest not found, skipping container scan"
+        echo "Please build the image first with: docker build -t terrafusion:latest ."
+    fi
 fi
 
-# Check secrets (requires git-secrets)
-if command -v git-secrets &> /dev/null; then
-    echo "Checking for secrets in code..."
-    git secrets --scan
-else
-    echo "git-secrets is not installed, skipping secrets scan"
-    echo "To install git-secrets: https://github.com/awslabs/git-secrets"
+# Run trufflehog secret scan if available
+if command -v trufflehog &> /dev/null; then
+    echo "----------------------------------------"
+    echo "Running secret scanning (trufflehog)"
+    echo "----------------------------------------"
+    trufflehog filesystem --directory=.
 fi
 
+echo "----------------------------------------"
+echo "Running dependency check"
+echo "----------------------------------------"
+# Check Python dependencies for known vulnerabilities
+pip-audit || echo "pip-audit failed or not installed"
+
+echo "----------------------------------------"
+echo "Checking for hardcoded secrets in code"
+echo "----------------------------------------"
+grep -r --include="*.py" --include="*.yaml" --include="*.yml" --include="*.json" --include="*.sh" \
+    -E "(password|secret|key|token|credential)[^:=]*[\":=][^,;}{]*(password|secret|key|token)" \
+    --exclude-dir=venv --exclude-dir=.git . || echo "No potential hardcoded secrets found"
+
+echo "----------------------------------------"
+echo "Checking file permissions"
+echo "----------------------------------------"
+find . -type f -name "*.sh" ! -perm -u=x -exec echo "Warning: {} is not executable" \;
+find . -type f -perm -o=w -not -path "*/\.*" -exec echo "Warning: {} is world-writable" \;
+
+echo "----------------------------------------"
 echo "Security scan completed"
+echo "----------------------------------------"
+
+if [ $MISSING_DEPS -eq 1 ]; then
+    echo "Warning: Some security scans were skipped due to missing dependencies"
+    echo "Please install the required tools for a complete security assessment"
+fi

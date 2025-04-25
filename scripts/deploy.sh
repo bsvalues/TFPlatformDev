@@ -1,63 +1,96 @@
 #!/bin/bash
 # Deployment script for TerraFusion Platform
-# This script deploys the application to a production environment
+# This script handles deployment to various environments
 
 set -e
 
 # Configuration
-ENV=$1
-DOCKER_REGISTRY="terrafusion"
-APP_NAME="terrafusion"
-GIT_BRANCH="main"
+ENV=${1:-"dev"}  # Default to dev environment if not provided
+DOCKER_REGISTRY=${DOCKER_REGISTRY:-"terrafusion"}
+VERSION=${VERSION:-"latest"}
 
-# Check if environment is provided
-if [ -z "$ENV" ]; then
-    echo "Error: No environment provided"
-    echo "Usage: $0 <environment> (dev|staging|prod)"
-    exit 1
+# Determine if we're using Docker Compose or Kubernetes
+DEPLOY_TYPE=${2:-"compose"}  # Default to docker-compose
+
+echo "Deploying TerraFusion Platform"
+echo "Environment: $ENV"
+echo "Deployment type: $DEPLOY_TYPE"
+
+# Build the Docker image
+echo "Building Docker image..."
+docker build -t ${DOCKER_REGISTRY}/terrafusion:${VERSION} .
+
+# Push the Docker image if we're using Kubernetes
+if [ "$DEPLOY_TYPE" == "k8s" ]; then
+    echo "Pushing Docker image to registry..."
+    docker push ${DOCKER_REGISTRY}/terrafusion:${VERSION}
 fi
 
-if [[ ! "$ENV" =~ ^(dev|staging|prod)$ ]]; then
-    echo "Error: Invalid environment. Use dev, staging, or prod"
-    exit 1
-fi
-
-echo "Starting deployment to $ENV environment"
-
-# Pull latest code from repository
-echo "Pulling latest code from $GIT_BRANCH branch"
-git checkout $GIT_BRANCH
-git pull origin $GIT_BRANCH
-
-# Build Docker image with environment-specific tag
-echo "Building Docker image for $ENV environment"
-docker-compose build
-docker tag ${DOCKER_REGISTRY}/api:latest ${DOCKER_REGISTRY}/api:${ENV}
-
-# Push image to registry
-echo "Pushing Docker image to registry"
-docker push ${DOCKER_REGISTRY}/api:${ENV}
-
-# Deploy to environment
-echo "Deploying to $ENV environment"
-if [ "$ENV" == "prod" ]; then
-    # For production, we want to be extra careful
-    echo "Production deployment - additional safeguards in place"
+# Deploy based on deployment type
+if [ "$DEPLOY_TYPE" == "compose" ]; then
+    echo "Deploying with Docker Compose..."
     
-    # Take backup before deployment
-    echo "Taking database backup before deployment"
-    ./scripts/backup.sh
+    # Ensure .env file exists
+    if [ ! -f .env ]; then
+        echo "Error: .env file not found"
+        echo "Please create a .env file with required environment variables"
+        exit 1
+    fi
     
-    # Deploy with zero-downtime
-    echo "Performing zero-downtime deployment"
-    # Implementation depends on your infrastructure (Kubernetes, Swarm, etc.)
-    # Example for docker-compose:
-    docker-compose -f docker-compose.yml -f docker-compose.${ENV}.yml up -d --scale web=2 --no-recreate web
-    sleep 10
-    docker-compose -f docker-compose.yml -f docker-compose.${ENV}.yml up -d --force-recreate --scale web=2 web
-else
-    # For non-production environments, simpler deployment
+    # Deploy with Docker Compose
     docker-compose -f docker-compose.yml -f docker-compose.${ENV}.yml up -d
+    
+    echo "Deployment completed with Docker Compose"
+    
+elif [ "$DEPLOY_TYPE" == "k8s" ]; then
+    echo "Deploying with Kubernetes..."
+    
+    # Check for kubectl
+    if ! command -v kubectl &> /dev/null; then
+        echo "Error: kubectl not found"
+        echo "Please install kubectl: https://kubernetes.io/docs/tasks/tools/install-kubectl/"
+        exit 1
+    fi
+    
+    # Create namespace if it doesn't exist
+    NAMESPACE="terrafusion-${ENV}"
+    if ! kubectl get namespace ${NAMESPACE} &> /dev/null; then
+        echo "Creating namespace: ${NAMESPACE}"
+        kubectl create namespace ${NAMESPACE}
+    fi
+    
+    # Apply Kubernetes manifests
+    echo "Applying Kubernetes manifests for ${ENV} environment..."
+    
+    # Check for kustomize
+    if command -v kustomize &> /dev/null; then
+        echo "Using kustomize..."
+        kustomize build k8s/overlays/${ENV} | kubectl apply -f -
+    else
+        echo "Using kubectl apply -k..."
+        kubectl apply -k k8s/overlays/${ENV}
+    fi
+    
+    echo "Kubernetes deployment completed"
+    
+    # Wait for deployment to complete
+    echo "Waiting for deployment to complete..."
+    kubectl rollout status deployment/terrafusion-api -n ${NAMESPACE}
+    
+    # Display service information
+    echo "Service information:"
+    kubectl get svc -n ${NAMESPACE}
+    
+    # Display ingress information if it exists
+    if kubectl get ingress -n ${NAMESPACE} &> /dev/null; then
+        echo "Ingress information:"
+        kubectl get ingress -n ${NAMESPACE}
+    fi
+    
+else
+    echo "Error: Unknown deployment type: $DEPLOY_TYPE"
+    echo "Supported types: compose, k8s"
+    exit 1
 fi
 
-echo "Deployment to $ENV environment completed successfully"
+echo "Deployment completed successfully"
