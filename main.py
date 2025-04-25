@@ -57,7 +57,7 @@ except ImportError:
 # Create routes for main pages
 @app.route('/')
 def index():
-    return render_template('improved_index.html')  # Using improved template
+    return render_template('apple_dashboard.html')  # Using Apple-inspired dashboard
 
 @app.route('/login')
 def login():

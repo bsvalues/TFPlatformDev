@@ -1,114 +1,500 @@
 {% extends "improved_base.html" %}
 
-{% block title %}TerraFusion Platform - Login{% endblock %}
+{% block title %}TerraFusion - Sign In{% endblock %}
 
 {% block login_content %}
-<div class="tf-login-card">
-    <div class="tf-login-header">
-        <div class="mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="70" height="70" fill="currentColor" viewBox="0 0 16 16">
+<div class="apple-inspired-login">
+    <!-- Apple-style login header with big logo -->
+    <div class="login-hero-section">
+        <!-- Apple-style big logo -->
+        <div class="apple-logo-container">
+            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="apple-logo" viewBox="0 0 16 16">
                 <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"/>
                 <path d="M8 3.293L3.707 7.586a1 1 0 0 0-.293.707V13h10V8.293a1 1 0 0 0-.293-.707L8 3.293z"/>
                 <path d="M7 10h2v2H7v-2z"/>
             </svg>
         </div>
-        <h1 class="h3 mb-2">TerraFusion Platform</h1>
-        <p class="text-light mb-0">Sign in to your account</p>
+        <h1>TerraFusion</h1>
+        <p class="tagline">Enterprise spatial intelligence platform</p>
     </div>
     
-    <div class="tf-card-body tf-p-4">
-        <form id="login-form" action="/api/auth/login" method="post">
-            <!-- Alert for error messages -->
-            <div id="login-alert" class="alert alert-danger d-none" role="alert"></div>
+    <!-- Apple-style sign in form -->
+    <div class="login-form-container">
+        <div class="login-form-inner">
+            <!-- Title bar like Apple websites -->
+            <div class="login-form-title">
+                <h2>Sign in with County ID</h2>
+            </div>
             
-            <div class="tf-form-group mb-3">
-                <label for="username" class="tf-form-label">
-                    Username
-                    <span class="sr-only">(required)</span>
-                </label>
-                <div class="input-group">
-                    <span class="input-group-text" id="username-addon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" aria-hidden="true" viewBox="0 0 16 16">
-                            <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
-                        </svg>
-                    </span>
+            <!-- Alert for error messages - Apple style -->
+            <div id="login-alert" class="apple-alert d-none" role="alert"></div>
+            
+            <form id="login-form" action="/api/auth/login" method="post">
+                <div class="apple-form-group">
                     <input 
                         type="text" 
-                        class="tf-form-control" 
+                        class="apple-form-control" 
                         id="username" 
                         name="username" 
-                        placeholder="Enter your username" 
-                        aria-label="Username" 
-                        aria-describedby="username-addon"
+                        placeholder="County ID" 
                         required 
                         autofocus
                         autocomplete="username">
                 </div>
-            </div>
-            
-            <div class="tf-form-group mb-4">
-                <label for="password" class="tf-form-label">
-                    Password
-                    <span class="sr-only">(required)</span>
-                </label>
-                <div class="input-group">
-                    <span class="input-group-text" id="password-addon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" aria-hidden="true" viewBox="0 0 16 16">
-                            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
-                        </svg>
-                    </span>
+                
+                <div class="apple-form-group">
                     <input 
                         type="password" 
-                        class="tf-form-control" 
+                        class="apple-form-control" 
                         id="password" 
                         name="password" 
-                        placeholder="Enter your password" 
-                        aria-label="Password" 
-                        aria-describedby="password-addon"
+                        placeholder="Password" 
                         required
                         autocomplete="current-password">
                 </div>
+                
+                <!-- Apple-style large rounded button -->
+                <div class="d-grid">
+                    <button type="submit" class="apple-button" id="login-button">
+                        Sign In
+                    </button>
+                </div>
+                
+                <div class="apple-help-text">
+                    <p>Use your County network credentials to sign in</p>
+                </div>
+            </form>
+            
+            <!-- Apple-style divider -->
+            <div class="apple-divider">
+                <span>or</span>
             </div>
             
-            <div class="d-grid">
-                <button type="submit" class="btn tf-btn tf-btn-primary" id="login-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0v-2z"/>
-                        <path fill-rule="evenodd" d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
-                    </svg>
-                    Sign In
-                </button>
+            <!-- Apple-style help section -->
+            <div class="apple-help-section">
+                <a href="#" class="apple-help-link">
+                    <span class="apple-help-icon">?</span>
+                    <span>Need help signing in?</span>
+                </a>
+                <a href="#" class="apple-help-link">
+                    <span class="apple-help-icon">i</span>
+                    <span>Request TerraFusion access</span>
+                </a>
             </div>
-        </form>
-    </div>
-    
-    <div class="tf-card-footer tf-p-3">
-        <div class="text-center">
-            <p class="mb-1 text-muted">County Network Authentication</p>
-            <p class="small text-muted mb-0">Use your County network credentials to sign in</p>
+        </div>
+        
+        <!-- Apple-style footer -->
+        <div class="apple-login-footer">
+            <p>TerraFusion is designed for secure County access</p>
+            <div class="apple-login-footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Use</a>
+                <a href="#">System Status</a>
+            </div>
+            <p class="version-text">TerraFusion Platform v1.0.0</p>
         </div>
     </div>
 </div>
 
-<!-- Authentication Help Card -->
-<div class="tf-card mt-4" style="max-width: 440px;">
-    <div class="tf-card-header">
-        <h5 class="tf-card-title mb-0 d-flex align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="me-2" viewBox="0 0 16 16">
-                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
-            </svg>
-            Authentication Help
-        </h5>
-    </div>
-    <div class="tf-card-body">
-        <p class="mb-2">Having trouble signing in?</p>
-        <ul class="mb-0 ps-4">
-            <li class="mb-2">Use your County network username and password</li>
-            <li class="mb-2">Ensure your account has access to TerraFusion</li>
-            <li>Contact IT support if you need assistance</li>
-        </ul>
-    </div>
-</div>
+<style>
+/* Apple-inspired login page styles */
+.apple-inspired-login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.login-hero-section {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.apple-logo-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.apple-logo {
+    width: 100px;
+    height: 100px;
+    color: var(--tf-primary);
+    filter: drop-shadow(0 4px 12px rgba(0, 113, 227, 0.3));
+}
+
+.login-hero-section h1 {
+    font-size: 3rem;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.login-hero-section .tagline {
+    font-size: 1.25rem;
+    color: var(--tf-text-secondary);
+    font-weight: 400;
+    letter-spacing: -0.011em;
+}
+
+.login-form-container {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(30, 30, 32, 0.8);
+    border-radius: 18px;
+    overflow: hidden;
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.login-form-inner {
+    padding: 2rem;
+}
+
+.login-form-title {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.login-form-title h2 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    letter-spacing: -0.022em;
+    color: white;
+    margin: 0;
+}
+
+.apple-form-group {
+    margin-bottom: 1rem;
+}
+
+.apple-form-control {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    color: white;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: none;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.apple-form-control:focus {
+    background-color: rgba(255, 255, 255, 0.12);
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0, 125, 250, 0.25);
+}
+
+.apple-form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.apple-button {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
+    background-color: var(--tf-primary);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: -0.011em;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.apple-button:hover {
+    background-color: var(--tf-primary-light);
+    transform: translateY(-1px);
+}
+
+.apple-button:active {
+    background-color: var(--tf-primary-dark);
+    transform: translateY(1px);
+}
+
+.apple-help-text {
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--tf-text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.apple-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.apple-divider::before,
+.apple-divider::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.apple-divider span {
+    padding: 0 1rem;
+    font-size: 0.875rem;
+    color: var(--tf-text-secondary);
+}
+
+.apple-help-section {
+    margin-top: 1.5rem;
+}
+
+.apple-help-link {
+    display: flex;
+    align-items: center;
+    color: var(--tf-primary);
+    padding: 0.5rem 0;
+    font-size: 0.9375rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.apple-help-link:hover {
+    color: var(--tf-primary-light);
+    transform: translateX(2px);
+}
+
+.apple-help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--tf-primary);
+    color: white;
+    font-size: 0.75rem;
+    margin-right: 0.75rem;
+    font-weight: 600;
+}
+
+.apple-login-footer {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: center;
+}
+
+.apple-login-footer p {
+    font-size: 0.8125rem;
+    color: var(--tf-text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.apple-login-footer-links {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+}
+
+.apple-login-footer-links a {
+    color: var(--tf-primary);
+    font-size: 0.8125rem;
+    text-decoration: none;
+    margin: 0 0.75rem;
+    transition: color 0.2s ease;
+}
+
+.apple-login-footer-links a:hover {
+    color: var(--tf-primary-light);
+    text-decoration: underline;
+}
+
+.version-text {
+    font-size: 0.75rem !important;
+    opacity: 0.5;
+    margin-top: 1rem !important;
+}
+
+.apple-alert {
+    background-color: rgba(255, 59, 48, 0.1);
+    color: #ff3b30;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    font-size: 0.9375rem;
+    display: flex;
+    align-items: center;
+}
+
+.apple-alert::before {
+    content: '!';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #ff3b30;
+    color: white;
+    font-weight: 600;
+    margin-right: 0.75rem;
+}
+
+/* Media queries */
+@media (max-width: 576px) {
+    .login-hero-section h1 {
+        font-size: 2.5rem;
+    }
+    
+    .login-hero-section .tagline {
+        font-size: 1.125rem;
+    }
+    
+    .apple-logo {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .login-form-container {
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
+        background: rgba(30, 30, 32, 0.9);
+    }
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Enhanced JavaScript for form submission with better error handling
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('login-form');
+        const loginAlert = document.getElementById('login-alert');
+        const loginButton = document.getElementById('login-button');
+        const originalButtonText = loginButton.innerHTML;
+        
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Show loading state
+                loginButton.disabled = true;
+                loginButton.innerHTML = '<span class="spinner"></span> Signing in...';
+                
+                // Hide any previous errors
+                loginAlert.classList.add('d-none');
+                
+                // Get form data
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                // Input validation
+                if (!username || !password) {
+                    showError('Please enter both County ID and password.');
+                    return;
+                }
+                
+                // Send request to login API
+                fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Login successful - redirect to dashboard
+                        window.location.href = '/';
+                    } else {
+                        // Login failed with a known error message
+                        showError(data.message || 'Authentication failed. Please check your credentials.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    
+                    // Handle different types of errors
+                    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                        showError('Network error. Please check your connection and try again.');
+                    } else {
+                        showError('Authentication failed. Please check your County ID and password.');
+                    }
+                });
+            });
+        }
+        
+        function showError(message) {
+            // Reset button state
+            loginButton.disabled = false;
+            loginButton.innerHTML = originalButtonText;
+            
+            // Show error message
+            loginAlert.textContent = message;
+            loginAlert.classList.remove('d-none');
+            
+            // Animate the error message
+            loginAlert.style.animation = 'none';
+            setTimeout(function() {
+                loginAlert.style.animation = 'shake 0.5s';
+            }, 10);
+            
+            // Set focus to the first input field with an error
+            if (!document.getElementById('username').value) {
+                document.getElementById('username').focus();
+            } else if (!document.getElementById('password').value) {
+                document.getElementById('password').focus();
+            }
+        }
+    });
+    
+    // Add the shake animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{% endblock %}
 {% endblock %}
 
 {% block scripts %}

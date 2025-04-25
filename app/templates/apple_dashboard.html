@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraFusion</title>
+    
+    <!-- Apple-inspired typography -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    
+    <!-- Base styles from our CSS file -->
+    <link href="/static/css/terrafusion.css" rel="stylesheet">
+    
+    <style>
+        /* Apple Design System-inspired styles */
+        :root {
+            /* Brand colors */
+            --apple-blue: #0071e3;
+            --apple-blue-light: #40a0ff;
+            --apple-blue-dark: #0051a3;
+            
+            /* UI colors */
+            --apple-background: #000000;
+            --apple-card: #1d1d1f;
+            --apple-sidebar: #141414;
+            --apple-border: rgba(255, 255, 255, 0.1);
+            
+            /* Text colors */
+            --apple-text: #f5f5f7;
+            --apple-text-secondary: #86868b;
+            --apple-text-tertiary: #6e6e73;
+            
+            /* Status colors */
+            --apple-green: #00c853;
+            --apple-orange: #ff9500;
+            --apple-red: #ff3b30;
+            
+            /* Radius */
+            --apple-radius-md: 12px;
+            --apple-radius-lg: 20px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background-color: var(--apple-background);
+            color: var(--apple-text);
+            line-height: 1.47;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-synthesis: none;
+        }
+        
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--apple-sidebar);
+            width: 270px;
+            flex-shrink: 0;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid var(--apple-border);
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo {
+            width: 34px;
+            height: 34px;
+            color: var(--apple-blue);
+            margin-right: 0.5rem;
+        }
+        
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.022em;
+        }
+        
+        .sidebar-nav {
+            padding: 0 0.75rem;
+        }
+        
+        .nav-group {
+            margin-bottom: 2rem;
+        }
+        
+        .nav-group-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--apple-text-tertiary);
+            letter-spacing: 0.08em;
+            padding: 0 0.75rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--apple-text);
+            padding: 0.65rem 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+            font-size: 0.9375rem;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: translateX(2px);
+        }
+        
+        .nav-link.active {
+            color: white;
+            background-color: rgba(0, 113, 227, 0.2);
+        }
+        
+        .nav-link.active .nav-icon {
+            color: var(--apple-blue);
+        }
+        
+        .nav-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 270px;
+            padding: 2rem;
+        }
+        
+        /* Header section */
+        .header-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .header-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header-subtitle {
+            font-size: 1.125rem;
+            color: var(--apple-text-secondary);
+            letter-spacing: -0.022em;
+            max-width: 75%;
+            line-height: 1.4;
+        }
+        
+        /* Cards section */
+        .cards-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        .card {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-md);
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-clickable {
+            cursor: pointer;
+        }
+        
+        .card-clickable:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--apple-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            letter-spacing: -0.022em;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+            flex: 1;
+        }
+        
+        .card-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--apple-border);
+            background-color: rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Feature card */
+        .feature-card {
+            height: 100%;
+        }
+        
+        .feature-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            margin-bottom: 1.25rem;
+        }
+        
+        .feature-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.022em;
+        }
+        
+        .feature-description {
+            color: var(--apple-text-secondary);
+            font-size: 0.9375rem;
+            margin-bottom: 1.25rem;
+            letter-spacing: -0.022em;
+            line-height: 1.4;
+        }
+        
+        /* Status indicators */
+        .status-label {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+        }
+        
+        .status-online {
+            background-color: rgba(0, 200, 83, 0.15);
+            color: var(--apple-green);
+        }
+        
+        .status-online::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--apple-green);
+            margin-right: 0.5rem;
+        }
+        
+        /* Activities section */
+        .activities-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .activities-card {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-lg);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .activities-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--apple-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .activities-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            letter-spacing: -0.022em;
+        }
+        
+        .view-all-link {
+            color: var(--apple-blue);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            transition: color 0.2s;
+        }
+        
+        .view-all-link:hover {
+            color: var(--apple-blue-light);
+            text-decoration: underline;
+        }
+        
+        .activities-body {
+            padding: 0;
+        }
+        
+        .activity-list {
+            list-style: none;
+        }
+        
+        .activity-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--apple-border);
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-item:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .activity-meta {
+            display: flex;
+            align-items: center;
+            font-size: 0.8125rem;
+            color: var(--apple-text-tertiary);
+        }
+        
+        .activity-time {
+            margin-right: 1rem;
+        }
+        
+        .activity-category {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+        
+        /* Quick access section */
+        .quick-access-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        
+        .quick-link {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-md);
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-decoration: none;
+            color: var(--apple-text);
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .quick-link:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+        
+        .quick-link-title {
+            display: flex;
+            align-items: center;
+            font-size: 0.9375rem;
+            font-weight: 500;
+        }
+        
+        .quick-link-icon {
+            margin-right: 0.75rem;
+            color: var(--apple-blue);
+        }
+        
+        .quick-link-arrow {
+            color: var(--apple-text-tertiary);
+        }
+        
+        /* System status section */
+        .system-status-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        
+        .status-item {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-md);
+            padding: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .status-item-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--apple-text-secondary);
+        }
+        
+        .status-item-value {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-item-value.online {
+            color: var(--apple-green);
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        
+        .status-indicator.online {
+            background-color: var(--apple-green);
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+                position: fixed;
+                bottom: 1.5rem;
+                right: 1.5rem;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background-color: var(--apple-blue);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                z-index: 110;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                border: none;
+                cursor: pointer;
+            }
+            
+            .header-title {
+                font-size: 1.75rem;
+            }
+            
+            .header-subtitle {
+                font-size: 1rem;
+                max-width: 100%;
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .mobile-menu-toggle {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="logo" viewBox="0 0 16 16">
+                        <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"/>
+                        <path d="M8 3.293L3.707 7.586a1 1 0 0 0-.293.707V13h10V8.293a1 1 0 0 0-.293-.707L8 3.293z"/>
+                        <path d="M7 10h2v2H7v-2z"/>
+                    </svg>
+                    <span class="logo-text">TerraFusion</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-group">
+                    <h2 class="nav-group-title">Main</h2>
+                    <a href="/" class="nav-link active">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5ZM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5 5 5Z"/>
+                        </svg>
+                        Dashboard
+                    </a>
+                    <a href="/map" class="nav-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 16 16" fill="currentColor">
+                            <path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98 4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"/>
+                        </svg>
+                        Maps
+                    </a>
+                    <a href="/flow" class="nav-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 16 16" fill="currentColor">
+                            <path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5v-1zM8.5 5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1zM0 11.5A1.5 1.5 0 0 1 1.5 10h1A1.5 1.5 0 0 1 4 11.5v1A1.5 1.5 0 0 1 2.5 14h-1A1.5 1.5 0 0 1 0 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5A1.5 1.5 0 0 1 7.5 10h1a1.5 1.5 0 0 1 1.5 1.5v1A1.5 1.5 0 0 1 8.5 14h-1A1.5 1.5 0 0 1 6 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1z"/>
+                        </svg>
+                        Data Flows
+                    </a>
+                </div>
+                
+                <div class="nav-group">
+                    <h2 class="nav-group-title">Analysis</h2>
+                    <a href="/insight" class="nav-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm6-5a5 5 0 0 0-3.479 8.592c.263.254.514.564.676.941L5.83 12h4.342l.632-1.467c.162-.377.413-.687.676-.941A5 5 0 0 0 8 1z"/>
+                        </svg>
+                        Insights
+                    </a>
+                    <a href="/audit" class="nav-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 16 16" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                            <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                            <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                        </svg>
+                        Audit & Corrections
+                    </a>
+                </div>
+                
+                <div class="nav-group">
+                    <h2 class="nav-group-title">Intelligence</h2>
+                    <a href="/ai/agents" class="nav-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5ZM3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.58 26.58 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.933.933 0 0 1-.765.935c-.845.147-2.34.346-4.235.346-1.895 0-3.39-.2-4.235-.346A.933.933 0 0 1 3 9.219V8.062Zm4.542-.827a.25.25 0 0 0-.217.068l-.92.9a24.767 24.767 0 0 1-1.871-.183.25.25 0 0 0-.068.495c.55.076 1.232.149 2.02.193a.25.25 0 0 0 .189-.071l.754-.736.847 1.71a.25.25 0 0 0 .404.062l.932-.97a25.286 25.286 0 0 0 1.922-.188.25.25 0 0 0-.068-.495c-.538.074-1.207.145-1.98.189a.25.25 0 0 0-.166.076l-.754.785-.842-1.7a.25.25 0 0 0-.182-.135Z"/>
+                            <path d="M8.5 1.866a1 1 0 1 0-1 0V3h-2A4.5 4.5 0 0 0 1 7.5V8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1v-.5A4.5 4.5 0 0 0 10.5 3h-2V1.866ZM14 7.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.5A3.5 3.5 0 0 1 5.5 4h5A3.5 3.5 0 0 1 14 7.5Z"/>
+                        </svg>
+                        AI Agents
+                    </a>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header Section -->
+            <section class="header-section">
+                <h1 class="header-title">Welcome to TerraFusion</h1>
+                <p class="header-subtitle">A comprehensive geospatial intelligence platform powered by AI agents for advanced analysis and visualization.</p>
+            </section>
+            
+            <!-- Feature Cards Section -->
+            <section class="cards-section">
+                <div class="card card-clickable feature-card">
+                    <div class="card-body">
+                        <div class="feature-icon" style="background-color: rgba(0, 113, 227, 0.1); color: var(--apple-blue);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98 4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"/>
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">TerraMap</h3>
+                        <p class="feature-description">Interactive mapping with advanced GIS capabilities and multi-layer visualization options.</p>
+                        <a href="/map" style="color: var(--apple-blue); text-decoration: none; font-size: 0.9375rem; font-weight: 500;">
+                            Explore Maps →
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card card-clickable feature-card">
+                    <div class="card-body">
+                        <div class="feature-icon" style="background-color: rgba(255, 149, 0, 0.1); color: var(--apple-orange);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5v-1zM8.5 5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1z"/>
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">TerraFlow</h3>
+                        <p class="feature-description">Data flow management and ETL processes for geospatial data transformation.</p>
+                        <a href="/flow" style="color: var(--apple-blue); text-decoration: none; font-size: 0.9375rem; font-weight: 500;">
+                            Manage Flows →
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card card-clickable feature-card">
+                    <div class="card-body">
+                        <div class="feature-icon" style="background-color: rgba(0, 200, 83, 0.1); color: var(--apple-green);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6z"/>
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">TerraInsight</h3>
+                        <p class="feature-description">AI-powered geospatial insights and pattern recognition tools for advanced analysis.</p>
+                        <a href="/insight" style="color: var(--apple-blue); text-decoration: none; font-size: 0.9375rem; font-weight: 500;">
+                            View Insights →
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card card-clickable feature-card">
+                    <div class="card-body">
+                        <div class="feature-icon" style="background-color: rgba(255, 59, 48, 0.1); color: var(--apple-red);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                            </svg>
+                        </div>
+                        <h3 class="feature-title">TerraAudit</h3>
+                        <p class="feature-description">Quality assurance and correction tools for geospatial data integrity.</p>
+                        <a href="/audit" style="color: var(--apple-blue); text-decoration: none; font-size: 0.9375rem; font-weight: 500;">
+                            Run Audits →
+                        </a>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Activities Section -->
+            <section class="activities-section">
+                <h2 class="section-title" style="font-size: 1.25rem; margin-bottom: 1rem; font-weight: 600; letter-spacing: -0.022em;">Recent Activities</h2>
+                
+                <div class="activities-card">
+                    <div class="activities-header">
+                        <h3 class="activities-title">System Activity Log</h3>
+                        <a href="#" class="view-all-link">View All</a>
+                    </div>
+                    
+                    <div class="activities-body">
+                        <ul class="activity-list">
+                            <li class="activity-item">
+                                <div class="activity-icon" style="background-color: rgba(0, 113, 227, 0.1); color: var(--apple-blue);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M15.384 6.115a.485.485 0 0 0-.047-.736A12.444 12.444 0 0 0 9.966 3.5a12.42 12.42 0 0 0-4.859 1.87.485.485 0 0 0-.048.736.518.518 0 0 0 .668.05A11.448 11.448 0 0 1 8.999 4.5c2.091 0 4.057.57 5.725 1.651a.52.52 0 0 0 .66-.036zm1.49 2.741a.48.48 0 0 0-.159-.674C15.093 6.893 13.195 6 11 6c-2.197 0-4.095.893-5.71 2.182a.48.48 0 0 0-.159.674.51.51 0 0 0 .704.147c1.421-1.132 3.241-1.853 5.16-1.853 1.923 0 3.742.721 5.158 1.855a.51.51 0 0 0 .704-.145M8 4c-.553 0-1-.43-1-.957 0-.526.447-.957 1-.957s1 .43 1 .957c0 .526-.447.957-1 .957"/>
+                                    </svg>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">System started successfully</div>
+                                    <div class="activity-meta">
+                                        <span class="activity-time">Today, 10:23 AM</span>
+                                        <span class="activity-category">System</span>
+                                    </div>
+                                </div>
+                            </li>
+                            
+                            <li class="activity-item">
+                                <div class="activity-icon" style="background-color: rgba(0, 200, 83, 0.1); color: var(--apple-green);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5ZM3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.58 26.58 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.933.933 0 0 1-.765.935c-.845.147-2.34.346-4.235.346-1.895 0-3.39-.2-4.235-.346A.933.933 0 0 1 3 9.219V8.062Z"/>
+                                        <path d="M8.5 1.866a1 1 0 1 0-1 0V3h-2A4.5 4.5 0 0 0 1 7.5V8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1v-.5A4.5 4.5 0 0 0 10.5 3h-2V1.866ZM14 7.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.5A3.5 3.5 0 0 1 5.5 4h5A3.5 3.5 0 0 1 14 7.5Z"/>
+                                    </svg>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">AI Agents initialized successfully</div>
+                                    <div class="activity-meta">
+                                        <span class="activity-time">Today, 10:24 AM</span>
+                                        <span class="activity-category">AI</span>
+                                    </div>
+                                </div>
+                            </li>
+                            
+                            <li class="activity-item">
+                                <div class="activity-icon" style="background-color: rgba(255, 149, 0, 0.1); color: var(--apple-orange);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5z"/>
+                                        <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm8-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                    </svg>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">User session started</div>
+                                    <div class="activity-meta">
+                                        <span class="activity-time">Today, 10:25 AM</span>
+                                        <span class="activity-category">Auth</span>
+                                    </div>
+                                </div>
+                            </li>
+                            
+                            <li class="activity-item">
+                                <div class="activity-icon" style="background-color: rgba(0, 113, 227, 0.1); color: var(--apple-blue);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98 4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"/>
+                                    </svg>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Map layers updated</div>
+                                    <div class="activity-meta">
+                                        <span class="activity-time">Today, 10:27 AM</span>
+                                        <span class="activity-category">Map</span>
+                                    </div>
+                                </div>
+                            </li>
+                            
+                            <li class="activity-item">
+                                <div class="activity-icon" style="background-color: rgba(255, 59, 48, 0.1); color: var(--apple-red);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                                        <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                    </svg>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Data correction completed</div>
+                                    <div class="activity-meta">
+                                        <span class="activity-time">Today, 10:30 AM</span>
+                                        <span class="activity-category">Audit</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Quick Access Section -->
+            <section class="quick-access-section">
+                <h2 class="section-title" style="font-size: 1.25rem; margin-bottom: 1rem; font-weight: 600; letter-spacing: -0.022em;">Quick Access</h2>
+                
+                <div class="quick-links">
+                    <a href="/map" class="quick-link">
+                        <span class="quick-link-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" class="quick-link-icon" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98 4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"/>
+                            </svg>
+                            Interactive Map
+                        </span>
+                        <span class="quick-link-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </span>
+                    </a>
+                    
+                    <a href="/flow" class="quick-link">
+                        <span class="quick-link-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" class="quick-link-icon" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5v-1zM8.5 5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1z"/>
+                            </svg>
+                            Data Flows
+                        </span>
+                        <span class="quick-link-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </span>
+                    </a>
+                    
+                    <a href="/insight" class="quick-link">
+                        <span class="quick-link-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" class="quick-link-icon" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6z"/>
+                            </svg>
+                            AI Insights
+                        </span>
+                        <span class="quick-link-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </span>
+                    </a>
+                    
+                    <a href="/audit" class="quick-link">
+                        <span class="quick-link-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" class="quick-link-icon" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                            </svg>
+                            Audit & Corrections
+                        </span>
+                        <span class="quick-link-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+            </section>
+            
+            <!-- System Status Section -->
+            <section class="system-status-section">
+                <h2 class="section-title" style="font-size: 1.25rem; margin-bottom: 1rem; font-weight: 600; letter-spacing: -0.022em;">System Status</h2>
+                
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-item-title">Database</div>
+                        <div class="status-item-value online">
+                            <span class="status-indicator online"></span>
+                            Online
+                        </div>
+                    </div>
+                    
+                    <div class="status-item">
+                        <div class="status-item-title">API Gateway</div>
+                        <div class="status-item-value online">
+                            <span class="status-indicator online"></span>
+                            Online
+                        </div>
+                    </div>
+                    
+                    <div class="status-item">
+                        <div class="status-item-title">AI Agents</div>
+                        <div class="status-item-value online">
+                            <span class="status-indicator online"></span>
+                            Online
+                        </div>
+                    </div>
+                    
+                    <div class="status-item">
+                        <div class="status-item-title">MCP Server</div>
+                        <div class="status-item-value online">
+                            <span class="status-indicator online"></span>
+                            Online
+                        </div>
+                    </div>
+                    
+                    <div class="status-item">
+                        <div class="status-item-title">Last Updated</div>
+                        <div class="status-item-value" style="color: var(--apple-text-secondary);">
+                            11:30 AM
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+        </svg>
+    </button>
+    
+    <script>
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            
+            if (mobileMenuToggle && sidebar) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                });
+                
+                // Close sidebar when clicking outside on mobile
+                document.addEventListener('click', function(event) {
+                    if (window.innerWidth < 992) {
+                        const isClickInsideSidebar = sidebar.contains(event.target);
+                        const isClickOnToggle = mobileMenuToggle.contains(event.target);
+                        
+                        if (!isClickInsideSidebar && !isClickOnToggle && sidebar.classList.contains('show')) {
+                            sidebar.classList.remove('show');
+                        }
+                    }
+                });
+            }
+            
+            // Feature card hover effect
+            const featureCards = document.querySelectorAll('.card-clickable');
+            featureCards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-8px)';
+                    card.style.boxShadow = '0 14px 28px rgba(0, 0, 0, 0.25)';
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = '';
+                    card.style.boxShadow = '';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
