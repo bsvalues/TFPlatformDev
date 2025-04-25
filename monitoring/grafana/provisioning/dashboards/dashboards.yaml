@@ -1,11 +1,11 @@
 apiVersion: 1
 
 providers:
-  - name: 'TerraFusion'
+  - name: 'TerraFusion Dashboards'
     orgId: 1
     folder: 'TerraFusion'
     type: file
     disableDeletion: false
     editable: true
     options:
-      path: /etc/grafana/provisioning/dashboards/terrafusion
+      path: /etc/grafana/provisioning/dashboards

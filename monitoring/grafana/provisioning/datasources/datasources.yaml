@@ -13,3 +13,19 @@ datasources:
     access: proxy
     url: http://loki:3100
     editable: false
+
+  - name: Postgres
+    type: postgres
+    url: postgres:5432
+    user: $PGUSER
+    secureJsonData:
+      password: $PGPASSWORD
+    database: $PGDATABASE
+    editable: false
+    jsonData:
+      sslmode: 'disable'
+      maxOpenConns: 10
+      maxIdleConns: 5
+      connMaxLifetime: 14400
+      postgresVersion: 1200
+      timescaledb: false

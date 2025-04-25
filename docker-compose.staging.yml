@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   web:
-    environment:
-      - FLASK_ENV=staging
-      - DEBUG=false
+    image: terrafusion/terrafusion:staging
     deploy:
       replicas: 2
       update_config:
@@ -14,33 +12,81 @@ services:
       restart_policy:
         condition: on-failure
         max_attempts: 3
-    ports:
-      - "5000:5000"
+        window: 120s
+    environment:
+      - FLASK_ENV=staging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "10"
 
   postgres:
     volumes:
-      - postgres_data_staging:/var/lib/postgresql/data/
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_MAX_CONNECTIONS=200
+      - postgres-staging-data:/var/lib/postgresql/data
     deploy:
       resources:
         limits:
           cpus: '1'
           memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "10"
 
-  redis:
+  prometheus:
     volumes:
-      - redis_data_staging:/data
-    ports:
-      - "6379:6379"
+      - prometheus-staging-data:/prometheus
     deploy:
       resources:
         limits:
           cpus: '0.5'
           memory: 512M
 
+  grafana:
+    volumes:
+      - grafana-staging-data:/var/lib/grafana
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  loki:
+    volumes:
+      - loki-staging-data:/loki
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Add a Redis service for staging
+  redis:
+    image: redis:latest
+    restart: always
+    volumes:
+      - redis-staging-data:/data
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - terrafusion-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
 volumes:
-  postgres_data_staging:
-  redis_data_staging:
+  postgres-staging-data:
+  prometheus-staging-data:
+  grafana-staging-data:
+  loki-staging-data:
+  redis-staging-data:
