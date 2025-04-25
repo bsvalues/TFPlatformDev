@@ -1,69 +1,84 @@
 #!/bin/bash
-# Database backup script for TerraFusion Platform
-# This script creates automated backups of the PostgreSQL database
-
 set -e
 
-# Configuration
-BACKUP_DIR=${BACKUP_DIR:-"/backups/postgres"}
-PGHOST=${PGHOST:-"localhost"}
-PGPORT=${PGPORT:-"5432"}
-PGUSER=${PGUSER:-"postgres"}
-PGDATABASE=${PGDATABASE:-"terrafusion"}
-RETENTION_DAYS=${RETENTION_DAYS:-"7"}  # Number of days to keep backups
+# TerraFusion Platform Database Backup Script
+# This script performs backups of PostgreSQL databases to S3
+# Usage: ./backup.sh [dev|staging|prod]
 
-# Create backup directory if it doesn't exist
-mkdir -p $BACKUP_DIR
+# Default to prod if no environment specified
+ENVIRONMENT=${1:-prod}
+TIMESTAMP=$(date +%Y%m%d%H%M%S)
+BACKUP_DIR="/tmp/terrafusion_backup_${TIMESTAMP}"
+S3_BUCKET="s3://terrafusion-backups"
+S3_PREFIX="${ENVIRONMENT}"
+RETENTION_DAYS=30  # How many days to keep backups
 
-# Generate timestamp for the backup file
-TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-BACKUP_FILE="$BACKUP_DIR/$PGDATABASE-$TIMESTAMP.sql.gz"
-
-echo "Starting database backup for TerraFusion Platform"
-echo "Database: $PGDATABASE"
-echo "Host: $PGHOST"
-echo "Backup file: $BACKUP_FILE"
-
-# Perform the backup
-echo "Creating database backup..."
-pg_dump -h $PGHOST -p $PGPORT -U $PGUSER -d $PGDATABASE | gzip > $BACKUP_FILE
-
-# Check if backup was successful
-if [ $? -eq 0 ]; then
-    echo "Backup completed successfully: $BACKUP_FILE"
-    
-    # Set file permissions
-    chmod 640 $BACKUP_FILE
-    
-    # Calculate backup size
-    BACKUP_SIZE=$(du -h $BACKUP_FILE | awk '{print $1}')
-    echo "Backup size: $BACKUP_SIZE"
-    
-    # Remove backups older than retention period
-    echo "Cleaning up old backups (older than $RETENTION_DAYS days)..."
-    find $BACKUP_DIR -name "*.sql.gz" -type f -mtime +$RETENTION_DAYS -delete
-    
-    # List remaining backups
-    echo "Current backups:"
-    ls -lh $BACKUP_DIR
-else
-    echo "Error: Backup failed"
+# Check if AWS CLI is installed
+if ! command -v aws &> /dev/null; then
+    echo "❌ AWS CLI is not installed. Please install it to use this script."
     exit 1
 fi
 
-# Optional: Copy backup to remote storage
-if [ -n "$REMOTE_BACKUP_ENABLED" ] && [ "$REMOTE_BACKUP_ENABLED" = "true" ]; then
-    echo "Copying backup to remote storage..."
-    
-    if [ -n "$S3_BUCKET" ]; then
-        echo "Copying to S3 bucket: $S3_BUCKET"
-        aws s3 cp $BACKUP_FILE s3://$S3_BUCKET/database-backups/
-    fi
-    
-    if [ -n "$REMOTE_HOST" ]; then
-        echo "Copying to remote host: $REMOTE_HOST"
-        scp $BACKUP_FILE $REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/
-    fi
+# Validate environment
+if [[ "$ENVIRONMENT" != "dev" && "$ENVIRONMENT" != "staging" && "$ENVIRONMENT" != "prod" ]]; then
+  echo "❌ Invalid environment: $ENVIRONMENT"
+  echo "Usage: ./backup.sh [dev|staging|prod]"
+  exit 1
 fi
 
-echo "Backup process completed"
+echo "🚀 Starting TerraFusion Platform backup for $ENVIRONMENT environment"
+
+# Load environment variables from configuration file
+if [ -f ".env.${ENVIRONMENT}" ]; then
+    echo "📋 Loading environment variables from .env.${ENVIRONMENT}"
+    source ".env.${ENVIRONMENT}"
+else
+    echo "⚠️ Warning: Environment file .env.${ENVIRONMENT} not found. Using existing environment variables."
+fi
+
+# Create backup directory
+mkdir -p "${BACKUP_DIR}"
+echo "📁 Created backup directory at ${BACKUP_DIR}"
+
+# Backup PostgreSQL database
+echo "💾 Backing up PostgreSQL database..."
+pg_dump -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}" -d "${PGDATABASE}" -F c -f "${BACKUP_DIR}/postgres_${TIMESTAMP}.dump"
+echo "✅ PostgreSQL backup completed"
+
+# Compress the backup directory
+echo "🗜️ Compressing backup files..."
+tar -czf "${BACKUP_DIR}.tar.gz" -C "$(dirname "${BACKUP_DIR}")" "$(basename "${BACKUP_DIR}")"
+echo "✅ Compression completed"
+
+# Upload to S3
+echo "☁️ Uploading backup to S3..."
+aws s3 cp "${BACKUP_DIR}.tar.gz" "${S3_BUCKET}/${S3_PREFIX}/terrafusion_backup_${TIMESTAMP}.tar.gz"
+echo "✅ Upload to S3 completed"
+
+# Clean up local files
+echo "🧹 Cleaning up local backup files..."
+rm -rf "${BACKUP_DIR}" "${BACKUP_DIR}.tar.gz"
+echo "✅ Local cleanup completed"
+
+# Remove old backups from S3 (older than RETENTION_DAYS)
+echo "🗑️ Removing backups older than ${RETENTION_DAYS} days from S3..."
+aws s3 ls "${S3_BUCKET}/${S3_PREFIX}/" | grep "terrafusion_backup_" | awk '{print $4}' | while read -r backup_file; do
+    backup_date=$(echo "$backup_file" | grep -oP 'terrafusion_backup_\K\d{14}' | cut -c1-8)
+    current_date=$(date +%Y%m%d)
+    
+    # Calculate days difference using date command
+    days_diff=$(( ( $(date -d "$current_date" +%s) - $(date -d "$backup_date" +%s) ) / 86400 ))
+    
+    if [ "$days_diff" -gt "$RETENTION_DAYS" ]; then
+        echo "🗑️ Removing old backup: $backup_file (${days_diff} days old)"
+        aws s3 rm "${S3_BUCKET}/${S3_PREFIX}/$backup_file"
+    fi
+done
+echo "✅ Cleanup of old backups completed"
+
+echo "🎉 TerraFusion Platform backup process completed successfully for $ENVIRONMENT environment!"
+echo "📊 Backup Stats:"
+echo "  Environment: $ENVIRONMENT"
+echo "  Timestamp: $TIMESTAMP"
+echo "  S3 Location: ${S3_BUCKET}/${S3_PREFIX}/terrafusion_backup_${TIMESTAMP}.tar.gz"
+echo "  Retention Policy: ${RETENTION_DAYS} days"

@@ -57,11 +57,11 @@ except ImportError:
 # Create routes for main pages
 @app.route('/')
 def index():
-    return render_template('index.html')  # Now using standalone template file
+    return render_template('improved_index.html')  # Using improved template
 
 @app.route('/login')
 def login():
-    return render_template('login.html')
+    return render_template('improved_login.html')
 
 @app.route('/map')
 def map_view():

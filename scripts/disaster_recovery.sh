@@ -1,259 +1,183 @@
 #!/bin/bash
-# Disaster Recovery script for TerraFusion Platform
-# This script provides tools for recovering from various failure scenarios
-
 set -e
 
-# Command line arguments
-ACTION=$1
-TARGET_ENV=${2:-"prod"}  # Default to production environment
+# TerraFusion Platform Disaster Recovery Script
+# This script automates the disaster recovery process
+# Usage: ./disaster_recovery.sh [dev|staging|prod]
 
-# Functions
-function print_usage() {
-    echo "TerraFusion Platform Disaster Recovery"
-    echo "Usage: $0 <action> [environment]"
-    echo
-    echo "Actions:"
-    echo "  backup             - Create a full backup of the system"
-    echo "  restore <file>     - Restore system from backup file"
-    echo "  rollback <version> - Rollback to a previous version"
-    echo "  status             - Check system status"
-    echo "  repair-db          - Attempt to repair database"
-    echo "  failover           - Initiate failover to standby"
-    echo "  help               - Show this help message"
-    echo
-    echo "Environment: dev, staging, prod (default: prod)"
-}
+# Default to prod if no environment specified
+ENVIRONMENT=${1:-prod}
+TIMESTAMP=$(date +%Y%m%d%H%M%S)
+S3_BUCKET="s3://terrafusion-backups"
+S3_PREFIX="${ENVIRONMENT}"
+LOG_FILE="disaster_recovery_${TIMESTAMP}.log"
 
-function create_backup() {
-    echo "Creating full system backup for $TARGET_ENV environment..."
-    
-    # Create backup directory
-    BACKUP_DIR="backup_${TARGET_ENV}_$(date +%Y%m%d_%H%M%S)"
-    mkdir -p $BACKUP_DIR
-    
-    # Database backup
-    echo "Backing up database..."
-    ./scripts/backup.sh
-    
-    # Copy latest database backup to disaster recovery backup directory
-    cp -v /backups/postgres/$(ls -t /backups/postgres | head -1) $BACKUP_DIR/
-    
-    # Config backup
-    echo "Backing up configuration..."
-    if [ -f .env.$TARGET_ENV ]; then
-        cp -v .env.$TARGET_ENV $BACKUP_DIR/
-    fi
-    cp -v docker-compose.yml docker-compose.$TARGET_ENV.yml $BACKUP_DIR/
-    
-    # Code backup
-    echo "Backing up code..."
-    git bundle create $BACKUP_DIR/code.bundle HEAD
-    
-    # Create archive
-    echo "Creating archive..."
-    tar -czf "${BACKUP_DIR}.tar.gz" $BACKUP_DIR
-    rm -rf $BACKUP_DIR
-    
-    echo "Backup completed: ${BACKUP_DIR}.tar.gz"
-}
+# Start logging
+exec > >(tee -a "${LOG_FILE}") 2>&1
 
-function restore_from_backup() {
-    BACKUP_FILE=$2
-    if [ -z "$BACKUP_FILE" ]; then
-        echo "Error: Backup file not specified"
-        echo "Usage: $0 restore <backup_file> [environment]"
-        exit 1
-    fi
-    
-    if [ ! -f "$BACKUP_FILE" ]; then
-        echo "Error: Backup file not found: $BACKUP_FILE"
-        exit 1
-    fi
-    
-    echo "Restoring system from backup: $BACKUP_FILE"
-    
-    # Extract backup
-    echo "Extracting backup..."
-    tar -xzf $BACKUP_FILE
-    BACKUP_DIR=$(basename $BACKUP_FILE .tar.gz)
-    
-    # Stop services
-    echo "Stopping services..."
-    docker-compose -f docker-compose.yml -f docker-compose.$TARGET_ENV.yml down
-    
-    # Restore database
-    echo "Restoring database..."
-    DB_BACKUP=$(ls -1 $BACKUP_DIR/*.sql.gz | head -1)
-    if [ -n "$DB_BACKUP" ]; then
-        ./scripts/restore.sh $DB_BACKUP
-    else
-        echo "No database backup found in archive"
-    fi
-    
-    # Restore config
-    echo "Restoring configuration..."
-    if [ -f $BACKUP_DIR/.env.$TARGET_ENV ]; then
-        cp -v $BACKUP_DIR/.env.$TARGET_ENV .env.$TARGET_ENV
-    fi
-    
-    # Restore code if needed
-    read -p "Restore code from backup? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo "Restoring code..."
-        git bundle unbundle $BACKUP_DIR/code.bundle
-    fi
-    
-    # Start services
-    echo "Starting services..."
-    docker-compose -f docker-compose.yml -f docker-compose.$TARGET_ENV.yml up -d
-    
-    # Cleanup
-    rm -rf $BACKUP_DIR
-    
-    echo "System restored successfully"
-}
+echo "🚨 STARTING TERRAFUSION DISASTER RECOVERY PROCEDURE 🚨"
+echo "📅 Date: $(date)"
+echo "🌐 Environment: ${ENVIRONMENT}"
+echo "⏱️ Timestamp: ${TIMESTAMP}"
+echo "📝 Log file: ${LOG_FILE}"
+echo "----------------------------------------"
 
-function rollback_version() {
-    VERSION=$2
-    if [ -z "$VERSION" ]; then
-        echo "Error: Version not specified"
-        echo "Usage: $0 rollback <version> [environment]"
-        echo "Available versions:"
-        git tag | grep -v '^$'
-        exit 1
-    fi
-    
-    echo "Rolling back to version $VERSION in $TARGET_ENV environment..."
-    
-    # Create backup before rollback
-    echo "Creating backup before rollback..."
-    create_backup
-    
-    # Checkout version
-    echo "Checking out version $VERSION..."
-    git checkout $VERSION
-    
-    # Rebuild and restart
-    echo "Rebuilding and restarting services..."
-    docker-compose -f docker-compose.yml -f docker-compose.$TARGET_ENV.yml up -d --build
-    
-    echo "Rollback completed"
-}
+# Validate environment
+if [[ "$ENVIRONMENT" != "dev" && "$ENVIRONMENT" != "staging" && "$ENVIRONMENT" != "prod" ]]; then
+  echo "❌ Invalid environment: $ENVIRONMENT"
+  echo "Usage: ./disaster_recovery.sh [dev|staging|prod]"
+  exit 1
+fi
 
-function check_status() {
-    echo "Checking system status for $TARGET_ENV environment..."
-    
-    # Check containers
-    echo "Container status:"
-    docker-compose -f docker-compose.yml -f docker-compose.$TARGET_ENV.yml ps
-    
-    # Check database
-    echo "Database status:"
-    if PGPASSWORD=$PGPASSWORD psql -h ${PGHOST:-localhost} -U ${PGUSER:-postgres} -c '\l' | grep -q ${PGDATABASE:-terrafusion}; then
-        echo "Database connection: OK"
-    else
-        echo "Database connection: FAILED"
-    fi
-    
-    # Check API
-    echo "API status:"
-    if curl -s http://localhost:5000/health | grep -q "healthy"; then
-        echo "API health check: OK"
-    else
-        echo "API health check: FAILED"
-    fi
-    
-    # Check disk space
-    echo "Disk space:"
-    df -h | grep -E '(Filesystem|/$)'
-    
-    echo "Status check completed"
-}
+# Load environment variables from configuration file
+if [ -f ".env.${ENVIRONMENT}" ]; then
+    echo "📋 Loading environment variables from .env.${ENVIRONMENT}"
+    source ".env.${ENVIRONMENT}"
+else
+    echo "⚠️ Warning: Environment file .env.${ENVIRONMENT} not found. Using existing environment variables."
+fi
 
-function repair_database() {
-    echo "Attempting to repair database in $TARGET_ENV environment..."
+# Step 1: Find the latest backup
+echo "🔍 Step 1: Finding the latest backup in S3..."
+LATEST_BACKUP=$(aws s3 ls "${S3_BUCKET}/${S3_PREFIX}/" | grep "terrafusion_backup_" | sort -r | head -1 | awk '{print $4}')
+
+if [ -z "${LATEST_BACKUP}" ]; then
+    echo "❌ No backups found in S3 bucket: ${S3_BUCKET}/${S3_PREFIX}/"
+    exit 1
+fi
+
+echo "✅ Latest backup found: ${LATEST_BACKUP}"
+echo "📅 Backup date: $(echo $LATEST_BACKUP | grep -oP 'terrafusion_backup_\K\d{14}' | sed 's/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)/\1-\2-\3 \4:\5:\6/')"
+
+# Step 2: Confirm recovery
+echo "⚠️ WARNING: This will perform a full disaster recovery procedure."
+echo "⚠️ All current data and infrastructure will be replaced with the backup data."
+echo "⚠️ Environment: ${ENVIRONMENT}"
+echo -n "Are you sure you want to proceed with disaster recovery? [y/N] "
+read -r confirmation
+if [[ ! "${confirmation}" =~ ^[Yy]$ ]]; then
+    echo "❌ Disaster recovery cancelled"
+    exit 1
+fi
+
+# Step 3: Restore database
+echo "🔄 Step 3: Restoring database from backup..."
+./restore.sh "${ENVIRONMENT}" "${LATEST_BACKUP}"
+echo "✅ Database restore completed"
+
+# Step 4: Provision infrastructure (if using Kubernetes)
+if command -v kubectl &> /dev/null; then
+    echo "🏗️ Step 4: Provisioning infrastructure using Kubernetes..."
     
-    # Create backup before repair
-    echo "Creating backup before repair..."
-    ./scripts/backup.sh
-    
-    # Repair PostgreSQL database
-    echo "Repairing PostgreSQL database..."
-    if [ "$TARGET_ENV" == "prod" ]; then
-        # For production, be extra careful
-        read -p "This will restart the production database. Are you sure? (y/n) " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            echo "Database repair cancelled"
+    # Check if we can access the cluster
+    if ! kubectl cluster-info &> /dev/null; then
+        echo "⚠️ Cannot access Kubernetes cluster. Attempting to update kubeconfig..."
+        # Try to update kubeconfig (AWS example)
+        if command -v aws &> /dev/null; then
+            aws eks update-kubeconfig --name terrafusion-cluster --region "${AWS_REGION:-us-east-1}"
+        else
+            echo "❌ Cannot access Kubernetes cluster and AWS CLI not available to configure access"
             exit 1
         fi
     fi
     
-    # Restart PostgreSQL container
-    echo "Restarting PostgreSQL container..."
-    docker-compose -f docker-compose.yml -f docker-compose.$TARGET_ENV.yml restart postgres
+    # Create namespace if it doesn't exist
+    NAMESPACE="terrafusion-${ENVIRONMENT}"
+    kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
     
-    # Run database vacuum
-    echo "Running database vacuum..."
-    PGPASSWORD=$PGPASSWORD psql -h ${PGHOST:-localhost} -U ${PGUSER:-postgres} -d ${PGDATABASE:-terrafusion} -c "VACUUM FULL;"
+    # Apply all Kubernetes manifests
+    kubectl apply -k "k8s/overlays/${ENVIRONMENT}/" --prune -l app=terrafusion
     
-    echo "Database repair completed"
-}
-
-function initiate_failover() {
-    echo "Initiating failover for $TARGET_ENV environment..."
+    # Wait for resources to become ready
+    kubectl rollout status deployment/terrafusion-api -n "${NAMESPACE}"
     
-    if [ "$TARGET_ENV" != "prod" ]; then
-        echo "Failover only supported in production environment"
-        exit 1
+    echo "✅ Infrastructure provisioning completed"
+else
+    echo "⚠️ Kubernetes not available. Using Docker Compose for infrastructure..."
+    
+    # Deploy using Docker Compose
+    if [ "${ENVIRONMENT}" == "prod" ]; then
+        docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+    elif [ "${ENVIRONMENT}" == "staging" ]; then
+        docker-compose -f docker-compose.yml -f docker-compose.staging.yml up -d
+    else
+        docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
     fi
     
-    # Confirm failover
-    read -p "This will failover to the standby system. Are you sure? (y/n) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "Failover cancelled"
-        exit 1
+    echo "✅ Infrastructure provisioning completed using Docker Compose"
+fi
+
+# Step 5: Run database migrations
+echo "🔄 Step 5: Running database migrations..."
+if command -v kubectl &> /dev/null; then
+    # If using Kubernetes
+    NAMESPACE="terrafusion-${ENVIRONMENT}"
+    POD=$(kubectl get pods -n "${NAMESPACE}" -l app=terrafusion,component=api -o jsonpath="{.items[0].metadata.name}")
+    kubectl exec -n "${NAMESPACE}" "${POD}" -- flask db upgrade
+else
+    # If using Docker Compose
+    docker-compose exec web flask db upgrade
+fi
+echo "✅ Database migrations completed"
+
+# Step 6: Verify recovery
+echo "🔍 Step 6: Verifying recovery..."
+if command -v kubectl &> /dev/null; then
+    # If using Kubernetes
+    NAMESPACE="terrafusion-${ENVIRONMENT}"
+    
+    # Check deployment status
+    READY_REPLICAS=$(kubectl get deployment terrafusion-api -n "${NAMESPACE}" -o jsonpath="{.status.readyReplicas}")
+    TOTAL_REPLICAS=$(kubectl get deployment terrafusion-api -n "${NAMESPACE}" -o jsonpath="{.status.replicas}")
+    
+    if [ "${READY_REPLICAS}" == "${TOTAL_REPLICAS}" ]; then
+        echo "✅ Deployment is healthy: ${READY_REPLICAS}/${TOTAL_REPLICAS} replicas ready"
+    else
+        echo "⚠️ Warning: Deployment not fully ready. ${READY_REPLICAS}/${TOTAL_REPLICAS} replicas ready"
     fi
     
-    # In a real system, this would trigger failover to a standby system
-    # For this example, we'll simulate by restarting services
-    echo "Simulating failover to standby system..."
+    # Check service status
+    SERVICE_IP=$(kubectl get svc -n "${NAMESPACE}" terrafusion-api -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+    if [ -z "${SERVICE_IP}" ]; then
+        SERVICE_IP=$(kubectl get svc -n "${NAMESPACE}" terrafusion-api -o jsonpath='{.spec.clusterIP}')
+    fi
     
-    # Stop primary services
-    echo "Stopping primary services..."
-    docker-compose -f docker-compose.yml -f docker-compose.$TARGET_ENV.yml down
+    echo "🌐 Service IP: ${SERVICE_IP}"
     
-    # Start "standby" services
-    echo "Starting standby services..."
-    docker-compose -f docker-compose.yml -f docker-compose.$TARGET_ENV.yml up -d
+    # Run a health check from within the cluster
+    HEALTH_STATUS=$(kubectl run -n "${NAMESPACE}" curl --image=curlimages/curl -i --rm --restart=Never --command -- curl -s -o /dev/null -w "%{http_code}" "http://${SERVICE_IP}/health" 2>/dev/null)
     
-    echo "Failover completed"
-}
+    if [ "${HEALTH_STATUS}" == "200" ]; then
+        echo "✅ Health check passed"
+    else
+        echo "⚠️ Warning: Health check returned status ${HEALTH_STATUS}"
+    fi
+else
+    # If using Docker Compose
+    CONTAINER_ID=$(docker-compose ps -q web)
+    HEALTH_STATUS=$(docker exec "${CONTAINER_ID}" curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/health 2>/dev/null)
+    
+    if [ "${HEALTH_STATUS}" == "200" ]; then
+        echo "✅ Health check passed"
+    else
+        echo "⚠️ Warning: Health check returned status ${HEALTH_STATUS}"
+    fi
+fi
 
-# Main script execution
-case $ACTION in
-    backup)
-        create_backup
-        ;;
-    restore)
-        restore_from_backup $@
-        ;;
-    rollback)
-        rollback_version $@
-        ;;
-    status)
-        check_status
-        ;;
-    repair-db)
-        repair_database
-        ;;
-    failover)
-        initiate_failover
-        ;;
-    help|*)
-        print_usage
-        ;;
-esac
+echo "----------------------------------------"
+echo "🎉 DISASTER RECOVERY PROCEDURE COMPLETED 🎉"
+echo "📅 Completed at: $(date)"
+echo "📝 Full logs available at: ${LOG_FILE}"
+echo "🔄 Recovery performed using backup: ${LATEST_BACKUP}"
+
+# Send notification
+if [ -n "${SLACK_WEBHOOK_URL}" ]; then
+    echo "📣 Sending notification..."
+    curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"🚨 TerraFusion disaster recovery for ${ENVIRONMENT} environment completed successfully. Used backup: ${LATEST_BACKUP}\"}" "${SLACK_WEBHOOK_URL}"
+fi
+
+echo "📋 Next steps:"
+echo "  1. Verify application functionality manually"
+echo "  2. Run integration tests"
+echo "  3. Check monitoring dashboards"
+echo "  4. Update documentation with recovery details"

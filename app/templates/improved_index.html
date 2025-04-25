@@ -1,0 +1,284 @@
+{% extends "improved_base.html" %}
+
+{% block title %}TerraFusion Platform - Dashboard{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Platform Summary -->
+    <div class="tf-card tf-mb-4">
+        <div class="tf-card-body tf-p-4">
+            <div class="row">
+                <div class="col-md-8">
+                    <h2 class="h4 tf-mb-3">TerraFusion Platform</h2>
+                    <p class="tf-mb-3">A comprehensive microservices platform for geospatial data processing with County network authentication, AI agent orchestration, and SQL Server integration.</p>
+                    <div class="d-flex gap-2">
+                        <a href="/map" class="btn tf-btn tf-btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98 4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"/>
+                            </svg>
+                            Explore Maps
+                        </a>
+                        <a href="/ai/agents" class="btn tf-btn tf-btn-outline">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                                <path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5ZM3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.58 26.58 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.933.933 0 0 1-.765.935c-.845.147-2.34.346-4.235.346-1.895 0-3.39-.2-4.235-.346A.933.933 0 0 1 3 9.219V8.062Zm4.542-.827a.25.25 0 0 0-.217.068l-.92.9a24.767 24.767 0 0 1-1.871-.183.25.25 0 0 0-.068.495c.55.076 1.232.149 2.02.193a.25.25 0 0 0 .189-.071l.754-.736.847 1.71a.25.25 0 0 0 .404.062l.932-.97a25.286 25.286 0 0 0 1.922-.188.25.25 0 0 0-.068-.495c-.538.074-1.207.145-1.98.189a.25.25 0 0 0-.166.076l-.754.785-.842-1.7a.25.25 0 0 0-.182-.135Z"/>
+                                <path d="M8.5 1.866a1 1 0 1 0-1 0V3h-2A4.5 4.5 0 0 0 1 7.5V8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1v-.5A4.5 4.5 0 0 0 10.5 3h-2V1.866ZM14 7.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.5A3.5 3.5 0 0 1 5.5 4h5A3.5 3.5 0 0 1 14 7.5Z"/>
+                            </svg>
+                            AI Agents
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4 mt-4 mt-md-0">
+                    <div class="tf-card h-100" style="background-color: rgba(44, 141, 106, 0.1);">
+                        <div class="tf-card-body p-3 d-flex flex-column justify-content-center align-items-center text-center">
+                            <div class="tf-ai-indicator mb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5ZM3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.58 26.58 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.933.933 0 0 1-.765.935c-.845.147-2.34.346-4.235.346-1.895 0-3.39-.2-4.235-.346A.933.933 0 0 1 3 9.219V8.062Z"/>
+                                    <path d="M8.5 1.866a1 1 0 1 0-1 0V3h-2A4.5 4.5 0 0 0 1 7.5V8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1v-.5A4.5 4.5 0 0 0 10.5 3h-2V1.866Z"/>
+                                </svg>
+                            </div>
+                            <h3 class="h5 mb-2">AI Agents Online</h3>
+                            <p class="text-muted mb-0">6 specialized agents available and active</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform Services -->
+    <h2 class="h4 tf-mb-3">Platform Services</h2>
+    <div class="row">
+        <div class="col-md-6 col-lg-3 tf-mb-4">
+            <div class="tf-card tf-feature-card">
+                <div class="tf-card-body">
+                    <div class="tf-feature-header">
+                        <div class="tf-feature-icon tf-bg-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98 4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"/>
+                            </svg>
+                        </div>
+                        <h3 class="h5 mb-0">TerraMap</h3>
+                    </div>
+                    <p class="tf-text-light tf-mb-3">Interactive mapping interface with layering and geospatial visualization capabilities.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="/map" class="btn tf-btn tf-btn-outline btn-sm">View Maps</a>
+                        <span class="badge bg-light text-dark">GIS</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 tf-mb-4">
+            <div class="tf-card tf-feature-card">
+                <div class="tf-card-body">
+                    <div class="tf-feature-header">
+                        <div class="tf-feature-icon tf-bg-primary-dark">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5v-1zM8.5 5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1zM0 11.5A1.5 1.5 0 0 1 1.5 10h1A1.5 1.5 0 0 1 4 11.5v1A1.5 1.5 0 0 1 2.5 14h-1A1.5 1.5 0 0 1 0 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5A1.5 1.5 0 0 1 7.5 10h1a1.5 1.5 0 0 1 1.5 1.5v1A1.5 1.5 0 0 1 8.5 14h-1A1.5 1.5 0 0 1 6 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1z"/>
+                            </svg>
+                        </div>
+                        <h3 class="h5 mb-0">TerraFlow</h3>
+                    </div>
+                    <p class="tf-text-light tf-mb-3">Data flow management and ETL processes for geospatial data transformation.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="/flow" class="btn tf-btn tf-btn-outline btn-sm">Manage Flows</a>
+                        <span class="badge bg-light text-dark">ETL</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 tf-mb-4">
+            <div class="tf-card tf-feature-card">
+                <div class="tf-card-body">
+                    <div class="tf-feature-header">
+                        <div class="tf-feature-icon" style="background-color: var(--tf-accent);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0c1920" viewBox="0 0 16 16">
+                                <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm6-5a5 5 0 0 0-3.479 8.592c.263.254.514.564.676.941L5.83 12h4.342l.632-1.467c.162-.377.413-.687.676-.941A5 5 0 0 0 8 1z"/>
+                            </svg>
+                        </div>
+                        <h3 class="h5 mb-0">TerraInsight</h3>
+                    </div>
+                    <p class="tf-text-light tf-mb-3">AI-powered geospatial insights and pattern recognition tools.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="/insight" class="btn tf-btn tf-btn-outline btn-sm">View Insights</a>
+                        <span class="badge bg-light text-dark">AI</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 tf-mb-4">
+            <div class="tf-card tf-feature-card">
+                <div class="tf-card-body">
+                    <div class="tf-feature-header">
+                        <div class="tf-feature-icon" style="background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                            </svg>
+                        </div>
+                        <h3 class="h5 mb-0">TerraAudit</h3>
+                    </div>
+                    <p class="tf-text-light tf-mb-3">Quality assurance and correction tools for geospatial data.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="/audit" class="btn tf-btn tf-btn-outline btn-sm">View Audits</a>
+                        <span class="badge bg-light text-dark">QA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities and Quick Access -->
+    <div class="row">
+        <div class="col-lg-8 tf-mb-4">
+            <div class="tf-card">
+                <div class="tf-card-header">
+                    <h3 class="tf-card-title">Recent Activities</h3>
+                </div>
+                <div class="tf-card-body p-0">
+                    <div class="table-responsive">
+                        <table class="tf-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>User</th>
+                                    <th>Activity</th>
+                                    <th>Module</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted">Today, 10:23 AM</td>
+                                    <td>System</td>
+                                    <td>Platform startup complete</td>
+                                    <td><span class="badge bg-primary">System</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Today, 10:24 AM</td>
+                                    <td>System</td>
+                                    <td>AI Agents initialized</td>
+                                    <td><span class="badge bg-success">AI</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Today, 10:25 AM</td>
+                                    <td>Admin</td>
+                                    <td>User session started</td>
+                                    <td><span class="badge bg-secondary">Auth</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Today, 10:27 AM</td>
+                                    <td>Admin</td>
+                                    <td>Map layers updated</td>
+                                    <td><span class="badge bg-info">Map</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Today, 10:30 AM</td>
+                                    <td>System</td>
+                                    <td>Data correction completed</td>
+                                    <td><span class="badge bg-warning">Audit</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tf-card-footer text-end">
+                    <a href="#" class="btn tf-btn tf-btn-outline btn-sm">View All Activities</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 tf-mb-4">
+            <div class="tf-card">
+                <div class="tf-card-header">
+                    <h3 class="tf-card-title">Quick Access</h3>
+                </div>
+                <div class="tf-card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/map" class="btn tf-btn tf-btn-outline d-flex align-items-center justify-content-between">
+                            <span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98 4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"/>
+                                </svg>
+                                Interactive Map
+                            </span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </a>
+                        <a href="/flow" class="btn tf-btn tf-btn-outline d-flex align-items-center justify-content-between">
+                            <span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5v-1zM8.5 5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1z"/>
+                                </svg>
+                                Data Flows
+                            </span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </a>
+                        <a href="/insight" class="btn tf-btn tf-btn-outline d-flex align-items-center justify-content-between">
+                            <span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                    <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6z"/>
+                                </svg>
+                                AI Insights
+                            </span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </a>
+                        <a href="/audit" class="btn tf-btn tf-btn-outline d-flex align-items-center justify-content-between">
+                            <span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                </svg>
+                                Audit & Corrections
+                            </span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- System Status -->
+            <div class="tf-card tf-mt-4">
+                <div class="tf-card-header">
+                    <h3 class="tf-card-title">System Status</h3>
+                </div>
+                <div class="tf-card-body p-3">
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Database</span>
+                            <span class="badge bg-success">Online</span>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span>API Gateway</span>
+                            <span class="badge bg-success">Online</span>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span>AI Agents</span>
+                            <span class="badge bg-success">Online</span>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span>MCP Server</span>
+                            <span class="badge bg-success">Online</span>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center">
+                            <span>Last Check</span>
+                            <span class="text-muted small">Today, 11:30 AM</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

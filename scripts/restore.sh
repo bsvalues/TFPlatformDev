@@ -1,83 +1,101 @@
 #!/bin/bash
-# Database restore script for TerraFusion Platform
-# This script restores a PostgreSQL database from a backup file
-
 set -e
 
-# Configuration
-PGHOST=${PGHOST:-"localhost"}
-PGPORT=${PGPORT:-"5432"}
-PGUSER=${PGUSER:-"postgres"}
-PGDATABASE=${PGDATABASE:-"terrafusion"}
+# TerraFusion Platform Database Restore Script
+# This script restores PostgreSQL databases from S3 backups
+# Usage: ./restore.sh [dev|staging|prod] [backup_file]
 
-# Check if a backup file was provided
-if [ -z "$1" ]; then
-    echo "Error: No backup file specified"
-    echo "Usage: $0 <backup_file.sql.gz>"
+# Check arguments
+if [ "$#" -lt 2 ]; then
+    echo "❌ Missing required arguments"
+    echo "Usage: ./restore.sh [dev|staging|prod] [backup_file]"
+    echo "Example: ./restore.sh prod terrafusion_backup_20250425123456.tar.gz"
     exit 1
 fi
 
-BACKUP_FILE=$1
+ENVIRONMENT=$1
+BACKUP_FILE=$2
+TIMESTAMP=$(date +%Y%m%d%H%M%S)
+RESTORE_DIR="/tmp/terrafusion_restore_${TIMESTAMP}"
+S3_BUCKET="s3://terrafusion-backups"
+S3_PREFIX="${ENVIRONMENT}"
 
-# Check if the backup file exists
-if [ ! -f "$BACKUP_FILE" ]; then
-    echo "Error: Backup file not found: $BACKUP_FILE"
+# Check if AWS CLI is installed
+if ! command -v aws &> /dev/null; then
+    echo "❌ AWS CLI is not installed. Please install it to use this script."
     exit 1
 fi
 
-echo "Starting database restore for TerraFusion Platform"
-echo "Database: $PGDATABASE"
-echo "Host: $PGHOST"
-echo "Backup file: $BACKUP_FILE"
-
-# Confirm restore operation
-read -p "WARNING: This will overwrite the existing database. Continue? (y/n) " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Restore operation cancelled"
-    exit 0
+# Validate environment
+if [[ "$ENVIRONMENT" != "dev" && "$ENVIRONMENT" != "staging" && "$ENVIRONMENT" != "prod" ]]; then
+  echo "❌ Invalid environment: $ENVIRONMENT"
+  echo "Usage: ./restore.sh [dev|staging|prod] [backup_file]"
+  exit 1
 fi
 
-# Check if we need to create the database
-DB_EXISTS=$(PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER -tAc "SELECT 1 FROM pg_database WHERE datname='$PGDATABASE'")
+echo "🚀 Starting TerraFusion Platform restore for $ENVIRONMENT environment using backup $BACKUP_FILE"
 
-if [ -z "$DB_EXISTS" ]; then
-    echo "Database does not exist, creating..."
-    PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER -c "CREATE DATABASE $PGDATABASE;"
+# Load environment variables from configuration file
+if [ -f ".env.${ENVIRONMENT}" ]; then
+    echo "📋 Loading environment variables from .env.${ENVIRONMENT}"
+    source ".env.${ENVIRONMENT}"
 else
-    echo "Database exists, dropping and recreating..."
-    
-    # Close existing connections
-    PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER -c "
-        SELECT pg_terminate_backend(pg_stat_activity.pid)
-        FROM pg_stat_activity
-        WHERE pg_stat_activity.datname = '$PGDATABASE'
-        AND pid <> pg_backend_pid();"
-    
-    # Drop and recreate the database
-    PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER -c "DROP DATABASE $PGDATABASE;"
-    PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER -c "CREATE DATABASE $PGDATABASE;"
+    echo "⚠️ Warning: Environment file .env.${ENVIRONMENT} not found. Using existing environment variables."
 fi
 
-# Perform the restore
-echo "Restoring database from backup..."
-gunzip -c $BACKUP_FILE | PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER -d $PGDATABASE
+# Create restore directory
+mkdir -p "${RESTORE_DIR}"
+echo "📁 Created restore directory at ${RESTORE_DIR}"
 
-# Check if restore was successful
-if [ $? -eq 0 ]; then
-    echo "Restore completed successfully"
-    
-    # Validate the restored database
-    echo "Validating restored database..."
-    TABLE_COUNT=$(PGPASSWORD=$PGPASSWORD psql -h $PGHOST -p $PGPORT -U $PGUSER -d $PGDATABASE -tAc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';")
-    echo "Found $TABLE_COUNT tables in the restored database"
-    
-    # Run any post-restore tasks (like updating sequences, etc.)
-    echo "Running post-restore tasks..."
-    # Add any necessary post-restore commands here
-    
-    echo "Restore process completed successfully"
-else
-    echo "Error: Restore failed"
+# Download backup from S3
+echo "☁️ Downloading backup from S3..."
+aws s3 cp "${S3_BUCKET}/${S3_PREFIX}/${BACKUP_FILE}" "${RESTORE_DIR}/${BACKUP_FILE}"
+echo "✅ Download from S3 completed"
+
+# Extract backup
+echo "📦 Extracting backup files..."
+tar -xzf "${RESTORE_DIR}/${BACKUP_FILE}" -C "${RESTORE_DIR}"
+echo "✅ Extraction completed"
+
+# Find the dump file in the extracted directory
+DUMP_FILE=$(find "${RESTORE_DIR}" -name "*.dump" | head -1)
+if [ -z "${DUMP_FILE}" ]; then
+    echo "❌ No PostgreSQL dump file found in the backup"
     exit 1
 fi
+echo "🔍 Found PostgreSQL dump file: ${DUMP_FILE}"
+
+# Confirm before proceeding
+echo "⚠️ WARNING: This will replace the current database with the backup data."
+echo "⚠️ All current data in ${PGDATABASE} on ${PGHOST} will be lost."
+echo "⚠️ Environment: ${ENVIRONMENT}"
+echo -n "Are you sure you want to proceed? [y/N] "
+read -r confirmation
+if [[ ! "${confirmation}" =~ ^[Yy]$ ]]; then
+    echo "❌ Restore cancelled"
+    rm -rf "${RESTORE_DIR}"
+    exit 1
+fi
+
+# Drop and recreate the database
+echo "🗑️ Dropping existing database..."
+PGPASSWORD="${PGPASSWORD}" dropdb -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}" "${PGDATABASE}" --if-exists
+echo "🔄 Creating new database..."
+PGPASSWORD="${PGPASSWORD}" createdb -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}" "${PGDATABASE}"
+
+# Restore PostgreSQL database
+echo "💾 Restoring PostgreSQL database from ${DUMP_FILE}..."
+pg_restore -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}" -d "${PGDATABASE}" -v "${DUMP_FILE}"
+echo "✅ PostgreSQL restore completed"
+
+# Clean up local files
+echo "🧹 Cleaning up local restore files..."
+rm -rf "${RESTORE_DIR}"
+echo "✅ Local cleanup completed"
+
+echo "🎉 TerraFusion Platform restore process completed successfully for $ENVIRONMENT environment!"
+echo "📊 Restore Stats:"
+echo "  Environment: $ENVIRONMENT"
+echo "  Backup File: $BACKUP_FILE"
+echo "  Timestamp: $TIMESTAMP"
+echo "  Database: ${PGDATABASE} on ${PGHOST}"

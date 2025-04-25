@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: terrafusion-api-pdb
+spec:
+  minAvailable: 3
+  selector:
+    matchLabels:
+      app: terrafusion
+      component: api
