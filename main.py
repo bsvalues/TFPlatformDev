@@ -122,6 +122,23 @@ def audit_api(audit_path):
     # Simplified audit endpoint
     return jsonify({"status": "success", "message": f"Audit for {audit_path}"})
 
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint for Docker and monitoring systems"""
+    # Basic health check - could be expanded to check database, AI services, etc.
+    health_status = {
+        "status": "healthy",
+        "version": "1.0.0",
+        "service": "terrafusion-api",
+        "database": "connected" if db.engine.pool.checkedout() >= 0 else "error"
+    }
+    
+    # Check if AI agents are available
+    if has_ai_agents:
+        health_status["ai_agents"] = "available"
+    
+    return jsonify(health_status)
+
 # Helper function to run async tasks from sync code
 def run_async(coro):
     """Run an async coroutine from sync code"""
