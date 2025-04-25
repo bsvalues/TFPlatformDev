@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: terrafusion-config
+data:
+  PGHOST: "postgres"
+  PGPORT: "5432"
+  PGUSER: "postgres"
+  PGDATABASE: "terrafusion"
