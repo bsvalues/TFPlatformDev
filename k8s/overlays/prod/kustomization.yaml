@@ -2,21 +2,27 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-- ../../base
-- ingress.yaml
-- hpa.yaml  # Horizontal Pod Autoscaler
+  - ../../base
+  - prod-ingress.yaml
+  - hpa.yaml
+  - pdb.yaml
 
 namespace: terrafusion-prod
 
 commonLabels:
-  environment: prod
+  environment: production
 
 patches:
-- path: replicas-patch.yaml
-- path: resource-patch.yaml
+  - path: replicas-patch.yaml
+  - path: resources-patch.yaml
+  - path: probes-patch.yaml
 
 configMapGenerator:
-- name: terrafusion-config
-  behavior: merge
-  literals:
-  - PGHOST=postgres-prod
+  - name: terrafusion-config
+    behavior: merge
+    literals:
+      - flask_env=production
+      - log_level=INFO
+      - enable_metrics=true
+      - max_workers=8
+      - cache_ttl=7200

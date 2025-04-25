@@ -3,4 +3,4 @@ kind: Deployment
 metadata:
   name: terrafusion-api
 spec:
-  replicas: 3
+  replicas: 5
