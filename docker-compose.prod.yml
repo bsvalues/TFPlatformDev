@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  web:
+    environment:
+      - FLASK_ENV=production
+      - DEBUG=false
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 30s
+        order: start-first
+        failure_action: rollback
+      restart_policy:
+        condition: any
+        max_attempts: 5
+    ports:
+      # In production, web traffic should go through a reverse proxy like Nginx
+      - "5000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.terrafusion.rule=Host(`terrafusion.example.com`)"
+      - "traefik.http.routers.terrafusion.entrypoints=websecure"
+      - "traefik.http.routers.terrafusion.tls.certresolver=myresolver"
+
+  postgres:
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data/
+    # In production, DB should not be directly exposed
+    expose:
+      - "5432"
+    environment:
+      - POSTGRES_MAX_CONNECTIONS=500
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+      restart_policy:
+        condition: any
+        max_attempts: 5
+
+  redis:
+    volumes:
+      - redis_data_prod:/data
+    # In production, Redis should not be directly exposed
+    expose:
+      - "6379"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+      restart_policy:
+        condition: any
+        max_attempts: 5
+
+  traefik:
+    image: traefik:v2.9
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=admin@example.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "traefik_letsencrypt:/letsencrypt"
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+volumes:
+  postgres_data_prod:
+  redis_data_prod:
+  traefik_letsencrypt:

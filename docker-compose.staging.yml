@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  web:
+    environment:
+      - FLASK_ENV=staging
+      - DEBUG=false
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    ports:
+      - "5000:5000"
+
+  postgres:
+    volumes:
+      - postgres_data_staging:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_MAX_CONNECTIONS=200
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  redis:
+    volumes:
+      - redis_data_staging:/data
+    ports:
+      - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+volumes:
+  postgres_data_staging:
+  redis_data_staging:
