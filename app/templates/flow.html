@@ -1,0 +1,817 @@
+{% extends "base.html" %}
+
+{% block title %}TerraFusion Platform - Data Flows{% endblock %}
+
+{% block head %}
+<!-- Additional flow-specific head content -->
+<style>
+    .flow-container {
+        height: calc(100vh - 160px);
+        overflow-y: auto;
+    }
+    
+    .flow-card {
+        border-radius: 10px;
+        transition: all 0.25s ease;
+        background-color: #0c2229;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .flow-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .flow-status {
+        display: flex;
+        align-items: center;
+        font-size: 0.8rem;
+    }
+    
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 6px;
+    }
+    
+    .status-indicator.running {
+        background-color: #198754;
+        box-shadow: 0 0 10px rgba(25, 135, 84, 0.5);
+    }
+    
+    .status-indicator.idle {
+        background-color: #6c757d;
+    }
+    
+    .status-indicator.error {
+        background-color: #dc3545;
+        box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+    }
+    
+    .flow-details {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease;
+    }
+    
+    .flow-details.expanded {
+        max-height: 500px;
+    }
+    
+    .flow-diagram {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 15px;
+    }
+    
+    .flow-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 10px;
+        background-color: rgba(44, 141, 106, 0.1);
+        border-radius: 5px;
+        flex: 1;
+        margin: 0 5px;
+    }
+    
+    .stat-item:first-child {
+        margin-left: 0;
+    }
+    
+    .stat-item:last-child {
+        margin-right: 0;
+    }
+    
+    .new-flow-card {
+        border: 2px dashed rgba(255, 255, 255, 0.1);
+        background-color: transparent;
+        border-radius: 10px;
+        text-align: center;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+    }
+    
+    .new-flow-card:hover {
+        border-color: var(--terra-accent);
+        background-color: rgba(72, 199, 149, 0.1);
+    }
+    
+    .task-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 15px;
+    }
+    
+    .task-item {
+        padding: 10px 15px;
+        margin-bottom: 8px;
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .task-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .task-item .badge {
+        float: right;
+    }
+    
+    .create-flow-modal .nav-tabs {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .create-flow-modal .nav-link {
+        color: rgba(255, 255, 255, 0.75);
+        border: none;
+    }
+    
+    .create-flow-modal .nav-link:hover {
+        color: white;
+        border: none;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+    }
+    
+    .create-flow-modal .nav-link.active {
+        color: var(--terra-accent);
+        background-color: transparent;
+        border: none;
+        border-bottom: 2px solid var(--terra-accent);
+    }
+    
+    .template-card {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .template-card.selected {
+        border-color: var(--terra-accent);
+        background-color: rgba(72, 199, 149, 0.1);
+    }
+    
+    .template-card:hover {
+        transform: translateY(-3px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Data Flows</h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createFlowModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg me-2" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+                    </svg>
+                    Create New Flow
+                </button>
+            </div>
+            
+            <!-- Search and Filters -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search flows...">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                            </svg>
+                            Refresh
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            Filter
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">All Flows</a></li>
+                            <li><a class="dropdown-item" href="#">Running</a></li>
+                            <li><a class="dropdown-item" href="#">Idle</a></li>
+                            <li><a class="dropdown-item" href="#">With Errors</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">My Flows</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Flow Cards -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+                <!-- New Flow Card -->
+                <div class="col">
+                    <div class="new-flow-card h-100" data-bs-toggle="modal" data-bs-target="#createFlowModal">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-plus-circle mb-3 text-muted" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                        </svg>
+                        <h5>Create New Flow</h5>
+                        <p class="text-muted">Set up a new data processing workflow</p>
+                    </div>
+                </div>
+                
+                <!-- Example Flow 1 -->
+                <div class="col">
+                    <div class="card flow-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h5 class="card-title">Parcel Import Flow</h5>
+                                <div class="flow-status">
+                                    <span class="status-indicator running"></span>
+                                    <span>Running</span>
+                                </div>
+                            </div>
+                            <p class="card-text text-muted">Imports parcel data from County Assessor's database and processes geometries.</p>
+                            
+                            <div class="flow-stats">
+                                <div class="stat-item">
+                                    <div class="small text-muted">Processed</div>
+                                    <div class="fw-bold">12,458</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="small text-muted">Errors</div>
+                                    <div class="fw-bold">14</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="small text-muted">Last Run</div>
+                                    <div class="fw-bold">2h ago</div>
+                                </div>
+                            </div>
+                            
+                            <div class="flow-details mt-3" id="flow1-details">
+                                <div class="flow-diagram">
+                                    <!-- Simple SVG flow diagram -->
+                                    <svg width="100%" height="80" viewBox="0 0 400 80" xmlns="http://www.w3.org/2000/svg">
+                                        <!-- Data Source -->
+                                        <rect x="10" y="30" width="80" height="40" rx="5" fill="#0c2229" stroke="#2c8d6a" stroke-width="2"/>
+                                        <text x="50" y="55" font-size="12" text-anchor="middle" fill="#e4e6e8">SQL Server</text>
+                                        
+                                        <!-- Arrow -->
+                                        <line x1="90" y1="50" x2="120" y2="50" stroke="#2c8d6a" stroke-width="2"/>
+                                        <polygon points="120,50 113,47 113,53" fill="#2c8d6a"/>
+                                        
+                                        <!-- Process -->
+                                        <rect x="120" y="30" width="100" height="40" rx="5" fill="#0c2229" stroke="#2c8d6a" stroke-width="2"/>
+                                        <text x="170" y="55" font-size="12" text-anchor="middle" fill="#e4e6e8">ETL Process</text>
+                                        
+                                        <!-- Arrow -->
+                                        <line x1="220" y1="50" x2="250" y2="50" stroke="#2c8d6a" stroke-width="2"/>
+                                        <polygon points="250,50 243,47 243,53" fill="#2c8d6a"/>
+                                        
+                                        <!-- Destination -->
+                                        <rect x="250" y="30" width="140" height="40" rx="5" fill="#0c2229" stroke="#2c8d6a" stroke-width="2"/>
+                                        <text x="320" y="55" font-size="12" text-anchor="middle" fill="#e4e6e8">PostgreSQL Database</text>
+                                    </svg>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <h6>Recent Tasks</h6>
+                                    <ul class="task-list">
+                                        <li class="task-item">
+                                            <span>Import from SQL Server</span>
+                                            <span class="badge bg-success">Completed</span>
+                                        </li>
+                                        <li class="task-item">
+                                            <span>Process Geometries</span>
+                                            <span class="badge bg-success">Completed</span>
+                                        </li>
+                                        <li class="task-item">
+                                            <span>Validate Data</span>
+                                            <span class="badge bg-warning">In Progress</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <button class="btn btn-sm btn-outline-primary flow-toggle" data-target="flow1-details">
+                                    <span class="show-text">Show Details</span>
+                                    <span class="hide-text d-none">Hide Details</span>
+                                </button>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-secondary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+                                            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                                            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stop-fill" viewBox="0 0 16 16">
+                                            <path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer text-muted small">
+                            Created by admin • Updated April 23, 2025
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Example Flow 2 -->
+                <div class="col">
+                    <div class="card flow-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h5 class="card-title">Buildings Processing</h5>
+                                <div class="flow-status">
+                                    <span class="status-indicator idle"></span>
+                                    <span>Idle</span>
+                                </div>
+                            </div>
+                            <p class="card-text text-muted">Extracts building footprints from imagery and classifies structure types.</p>
+                            
+                            <div class="flow-stats">
+                                <div class="stat-item">
+                                    <div class="small text-muted">Processed</div>
+                                    <div class="fw-bold">7,892</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="small text-muted">Errors</div>
+                                    <div class="fw-bold">2</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="small text-muted">Last Run</div>
+                                    <div class="fw-bold">2d ago</div>
+                                </div>
+                            </div>
+                            
+                            <div class="flow-details mt-3" id="flow2-details">
+                                <div class="flow-diagram">
+                                    <!-- Simple SVG flow diagram -->
+                                    <svg width="100%" height="80" viewBox="0 0 400 80" xmlns="http://www.w3.org/2000/svg">
+                                        <!-- Data Source -->
+                                        <rect x="10" y="30" width="100" height="40" rx="5" fill="#0c2229" stroke="#2c8d6a" stroke-width="2"/>
+                                        <text x="60" y="55" font-size="12" text-anchor="middle" fill="#e4e6e8">Image Dataset</text>
+                                        
+                                        <!-- Arrow -->
+                                        <line x1="110" y1="50" x2="140" y2="50" stroke="#2c8d6a" stroke-width="2"/>
+                                        <polygon points="140,50 133,47 133,53" fill="#2c8d6a"/>
+                                        
+                                        <!-- Process -->
+                                        <rect x="140" y="30" width="100" height="40" rx="5" fill="#0c2229" stroke="#2c8d6a" stroke-width="2"/>
+                                        <text x="190" y="55" font-size="12" text-anchor="middle" fill="#e4e6e8">AI Processing</text>
+                                        
+                                        <!-- Arrow -->
+                                        <line x1="240" y1="50" x2="270" y2="50" stroke="#2c8d6a" stroke-width="2"/>
+                                        <polygon points="270,50 263,47 263,53" fill="#2c8d6a"/>
+                                        
+                                        <!-- Destination -->
+                                        <rect x="270" y="30" width="120" height="40" rx="5" fill="#0c2229" stroke="#2c8d6a" stroke-width="2"/>
+                                        <text x="330" y="55" font-size="12" text-anchor="middle" fill="#e4e6e8">Vector Database</text>
+                                    </svg>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <h6>Recent Tasks</h6>
+                                    <ul class="task-list">
+                                        <li class="task-item">
+                                            <span>Image Preprocessing</span>
+                                            <span class="badge bg-success">Completed</span>
+                                        </li>
+                                        <li class="task-item">
+                                            <span>Feature Detection</span>
+                                            <span class="badge bg-success">Completed</span>
+                                        </li>
+                                        <li class="task-item">
+                                            <span>Classification</span>
+                                            <span class="badge bg-success">Completed</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <button class="btn btn-sm btn-outline-primary flow-toggle" data-target="flow2-details">
+                                    <span class="show-text">Show Details</span>
+                                    <span class="hide-text d-none">Hide Details</span>
+                                </button>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-secondary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+                                            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                                            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+                                            <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer text-muted small">
+                            Created by jsmith • Updated April 20, 2025
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Example Flow 3 -->
+                <div class="col">
+                    <div class="card flow-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h5 class="card-title">Road Network Analysis</h5>
+                                <div class="flow-status">
+                                    <span class="status-indicator error"></span>
+                                    <span>Error</span>
+                                </div>
+                            </div>
+                            <p class="card-text text-muted">Analyzes road network connectivity and generates traffic flow models.</p>
+                            
+                            <div class="flow-stats">
+                                <div class="stat-item">
+                                    <div class="small text-muted">Processed</div>
+                                    <div class="fw-bold">1,245</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="small text-muted">Errors</div>
+                                    <div class="fw-bold text-danger">124</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="small text-muted">Last Run</div>
+                                    <div class="fw-bold">1h ago</div>
+                                </div>
+                            </div>
+                            
+                            <div class="flow-details mt-3" id="flow3-details">
+                                <div class="alert alert-danger">
+                                    <strong>Error:</strong> Database connection failed during network analysis step. Check credentials and network connectivity.
+                                </div>
+                                
+                                <div class="flow-diagram">
+                                    <!-- Simple SVG flow diagram -->
+                                    <svg width="100%" height="80" viewBox="0 0 400 80" xmlns="http://www.w3.org/2000/svg">
+                                        <!-- Data Source -->
+                                        <rect x="10" y="30" width="100" height="40" rx="5" fill="#0c2229" stroke="#2c8d6a" stroke-width="2"/>
+                                        <text x="60" y="55" font-size="12" text-anchor="middle" fill="#e4e6e8">Road Database</text>
+                                        
+                                        <!-- Arrow -->
+                                        <line x1="110" y1="50" x2="140" y2="50" stroke="#2c8d6a" stroke-width="2"/>
+                                        <polygon points="140,50 133,47 133,53" fill="#2c8d6a"/>
+                                        
+                                        <!-- Process -->
+                                        <rect x="140" y="30" width="120" height="40" rx="5" fill="#0c2229" stroke="#dc3545" stroke-width="2"/>
+                                        <text x="200" y="55" font-size="12" text-anchor="middle" fill="#e4e6e8">Network Analysis</text>
+                                        
+                                        <!-- Arrow -->
+                                        <line x1="260" y1="50" x2="290" y2="50" stroke="#6c757d" stroke-width="2" stroke-dasharray="5,5"/>
+                                        <polygon points="290,50 283,47 283,53" fill="#6c757d"/>
+                                        
+                                        <!-- Destination -->
+                                        <rect x="290" y="30" width="100" height="40" rx="5" fill="#0c2229" stroke="#6c757d" stroke-width="2" stroke-dasharray="5,5"/>
+                                        <text x="340" y="55" font-size="12" text-anchor="middle" fill="#6c757d">Flow Model</text>
+                                    </svg>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <h6>Recent Tasks</h6>
+                                    <ul class="task-list">
+                                        <li class="task-item">
+                                            <span>Data Preparation</span>
+                                            <span class="badge bg-success">Completed</span>
+                                        </li>
+                                        <li class="task-item">
+                                            <span>Network Analysis</span>
+                                            <span class="badge bg-danger">Failed</span>
+                                        </li>
+                                        <li class="task-item">
+                                            <span>Model Generation</span>
+                                            <span class="badge bg-secondary">Pending</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <button class="btn btn-sm btn-outline-primary flow-toggle" data-target="flow3-details">
+                                    <span class="show-text">Show Details</span>
+                                    <span class="hide-text d-none">Hide Details</span>
+                                </button>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-secondary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+                                            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                                            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
+                                            <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+                                            <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer text-muted small">
+                            Created by mwilson • Updated April 25, 2025
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Flow Modal -->
+<div class="modal fade create-flow-modal" id="createFlowModal" tabindex="-1" aria-labelledby="createFlowModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createFlowModalLabel">Create New Data Flow</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-4" id="createFlowTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="template-tab" data-bs-toggle="tab" data-bs-target="#templateTab" type="button" role="tab" aria-controls="templateTab" aria-selected="true">
+                            Use Template
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="custom-tab" data-bs-toggle="tab" data-bs-target="#customTab" type="button" role="tab" aria-controls="customTab" aria-selected="false">
+                            Custom Flow
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="import-tab" data-bs-toggle="tab" data-bs-target="#importTab" type="button" role="tab" aria-controls="importTab" aria-selected="false">
+                            Import
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="createFlowTabsContent">
+                    <!-- Template Tab -->
+                    <div class="tab-pane fade show active" id="templateTab" role="tabpanel" aria-labelledby="template-tab">
+                        <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+                            <!-- Template 1 -->
+                            <div class="col">
+                                <div class="card template-card h-100" data-template="sql-import">
+                                    <div class="card-body">
+                                        <h5 class="card-title">SQL Server Import</h5>
+                                        <p class="card-text">Import data from SQL Server to PostgreSQL with automatic schema mapping.</p>
+                                        <div class="small text-muted mt-2">
+                                            <strong>Includes:</strong> SQL extraction, schema mapping, data validation, PostgreSQL import
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Template 2 -->
+                            <div class="col">
+                                <div class="card template-card h-100" data-template="shapefile-processing">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Shapefile Processing</h5>
+                                        <p class="card-text">Process and validate Shapefiles for import into the geospatial database.</p>
+                                        <div class="small text-muted mt-2">
+                                            <strong>Includes:</strong> Shapefile extraction, projection handling, attribute cleaning, PostGIS import
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Template 3 -->
+                            <div class="col">
+                                <div class="card template-card h-100" data-template="feature-extraction">
+                                    <div class="card-body">
+                                        <h5 class="card-title">AI Feature Extraction</h5>
+                                        <p class="card-text">Extract features from imagery using AI models with classification.</p>
+                                        <div class="small text-muted mt-2">
+                                            <strong>Includes:</strong> Image preprocessing, AI extraction, feature classification, vector creation
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Template 4 -->
+                            <div class="col">
+                                <div class="card template-card h-100" data-template="data-correction">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Data Correction Processing</h5>
+                                        <p class="card-text">Process submitted data corrections and apply them to the master database.</p>
+                                        <div class="small text-muted mt-2">
+                                            <strong>Includes:</strong> Correction validation, approval routing, audit logging, data update
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="template-flow-name" class="form-label">Flow Name</label>
+                            <input type="text" class="form-control" id="template-flow-name" placeholder="Enter a name for your flow">
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="template-schedule-check">
+                            <label class="form-check-label" for="template-schedule-check">
+                                Schedule this flow to run on a recurring basis
+                            </label>
+                        </div>
+                        
+                        <div id="template-schedule-options" class="mb-3 d-none">
+                            <label for="template-schedule-type" class="form-label">Schedule Type</label>
+                            <select class="form-select mb-3" id="template-schedule-type">
+                                <option value="hourly">Hourly</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="template-schedule-time" class="form-label">Time</label>
+                                    <input type="time" class="form-control" id="template-schedule-time">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="template-schedule-day" class="form-label">Day</label>
+                                    <select class="form-select" id="template-schedule-day">
+                                        <option value="mon">Monday</option>
+                                        <option value="tue">Tuesday</option>
+                                        <option value="wed">Wednesday</option>
+                                        <option value="thu">Thursday</option>
+                                        <option value="fri">Friday</option>
+                                        <option value="sat">Saturday</option>
+                                        <option value="sun">Sunday</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Custom Flow Tab -->
+                    <div class="tab-pane fade" id="customTab" role="tabpanel" aria-labelledby="custom-tab">
+                        <div class="alert alert-info mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill me-2" viewBox="0 0 16 16">
+                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                            </svg>
+                            Custom flows provide advanced configuration options. Use the visual flow editor to design your data pipeline.
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="custom-flow-name" class="form-label">Flow Name</label>
+                            <input type="text" class="form-control" id="custom-flow-name" placeholder="Enter a name for your flow">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="custom-flow-description" class="form-label">Description</label>
+                            <textarea class="form-control" id="custom-flow-description" rows="2" placeholder="Describe the purpose of this flow"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-primary" id="open-flow-editor">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square me-2" viewBox="0 0 16 16">
+                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                                </svg>
+                                Open Flow Editor
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Import Tab -->
+                    <div class="tab-pane fade" id="importTab" role="tabpanel" aria-labelledby="import-tab">
+                        <div class="mb-3">
+                            <label for="import-file" class="form-label">Import Flow Definition</label>
+                            <input class="form-control" type="file" id="import-file" accept=".json,.yaml,.yml">
+                            <div class="form-text">Upload a JSON or YAML flow definition file.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="import-flow-name" class="form-label">Flow Name</label>
+                            <input type="text" class="form-control" id="import-flow-name" placeholder="Enter a name for your flow">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="create-flow-btn">Create Flow</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Flow-specific JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle flow details
+        document.querySelectorAll('.flow-toggle').forEach(button => {
+            button.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const detailsElement = document.getElementById(targetId);
+                
+                // Toggle expanded class
+                detailsElement.classList.toggle('expanded');
+                
+                // Toggle button text
+                const showText = this.querySelector('.show-text');
+                const hideText = this.querySelector('.hide-text');
+                
+                showText.classList.toggle('d-none');
+                hideText.classList.toggle('d-none');
+            });
+        });
+        
+        // Template selection
+        document.querySelectorAll('.template-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove selected class from all templates
+                document.querySelectorAll('.template-card').forEach(c => {
+                    c.classList.remove('selected');
+                });
+                
+                // Add selected class to clicked template
+                this.classList.add('selected');
+            });
+        });
+        
+        // Schedule checkbox
+        document.getElementById('template-schedule-check').addEventListener('change', function() {
+            const scheduleOptions = document.getElementById('template-schedule-options');
+            if (this.checked) {
+                scheduleOptions.classList.remove('d-none');
+            } else {
+                scheduleOptions.classList.add('d-none');
+            }
+        });
+        
+        // Create flow button
+        document.getElementById('create-flow-btn').addEventListener('click', function() {
+            // Get active tab
+            const activeTab = document.querySelector('#createFlowTabs .nav-link.active').getAttribute('id');
+            
+            if (activeTab === 'template-tab') {
+                // Get selected template
+                const selectedTemplate = document.querySelector('.template-card.selected');
+                if (!selectedTemplate) {
+                    alert('Please select a template');
+                    return;
+                }
+                
+                const templateName = selectedTemplate.getAttribute('data-template');
+                const flowName = document.getElementById('template-flow-name').value;
+                
+                if (!flowName) {
+                    alert('Please enter a flow name');
+                    return;
+                }
+                
+                // Check if scheduled
+                const isScheduled = document.getElementById('template-schedule-check').checked;
+                
+                // In a real system, we would create the flow on the server
+                alert(`Flow "${flowName}" created from template "${templateName}"${isScheduled ? ' (scheduled)' : ''}`);
+                
+            } else if (activeTab === 'custom-tab') {
+                alert('The Flow Editor would open in a production environment');
+            } else if (activeTab === 'import-tab') {
+                const file = document.getElementById('import-file').files[0];
+                const flowName = document.getElementById('import-flow-name').value;
+                
+                if (!file) {
+                    alert('Please select a file to import');
+                    return;
+                }
+                
+                if (!flowName) {
+                    alert('Please enter a flow name');
+                    return;
+                }
+                
+                alert(`Flow "${flowName}" created from imported definition`);
+            }
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('createFlowModal'));
+            modal.hide();
+        });
+        
+        // Open flow editor button
+        document.getElementById('open-flow-editor').addEventListener('click', function() {
+            alert('In a production environment, this would open the visual flow editor');
+        });
+    });
+</script>
+{% endblock %}

@@ -59,23 +59,19 @@ def login():
 
 @app.route('/map')
 def map_view():
-    # Return to index page for now since we don't have map template
-    return redirect('/')
+    return render_template('map.html')
 
 @app.route('/flow')
 def flow():
-    # Return to index page for now since we don't have flow template
-    return redirect('/')
+    return render_template('flow.html')
 
 @app.route('/insight')
 def insight():
-    # Return to index page for now since we don't have insight template
-    return redirect('/')
+    return render_template('insight.html')
 
 @app.route('/audit')
 def audit():
-    # Return to index page for now since we don't have audit template
-    return redirect('/')
+    return render_template('audit.html')
 
 # API routes - simplified for now
 @app.route('/api/auth/login', methods=['POST'])
