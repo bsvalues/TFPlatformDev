@@ -1,43 +1,69 @@
 #!/bin/bash
 # Database backup script for TerraFusion Platform
-# This script performs daily backups of the PostgreSQL database
+# This script creates automated backups of the PostgreSQL database
 
 set -e
 
 # Configuration
-BACKUP_DIR="/backups/postgres"
-BACKUP_RETENTION_DAYS=7
-DB_HOST=${PGHOST:-localhost}
-DB_PORT=${PGPORT:-5432}
-DB_USER=${PGUSER:-postgres}
-DB_NAME=${PGDATABASE:-terrafusion}
-DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="$BACKUP_DIR/${DB_NAME}_${DATE}.sql.gz"
+BACKUP_DIR=${BACKUP_DIR:-"/backups/postgres"}
+PGHOST=${PGHOST:-"localhost"}
+PGPORT=${PGPORT:-"5432"}
+PGUSER=${PGUSER:-"postgres"}
+PGDATABASE=${PGDATABASE:-"terrafusion"}
+RETENTION_DAYS=${RETENTION_DAYS:-"7"}  # Number of days to keep backups
 
 # Create backup directory if it doesn't exist
 mkdir -p $BACKUP_DIR
 
-# Check if PGPASSWORD is set
-if [ -z "$PGPASSWORD" ]; then
-    echo "Error: PGPASSWORD environment variable is not set"
-    exit 1
-fi
+# Generate timestamp for the backup file
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+BACKUP_FILE="$BACKUP_DIR/$PGDATABASE-$TIMESTAMP.sql.gz"
 
-echo "Starting backup of $DB_NAME database"
+echo "Starting database backup for TerraFusion Platform"
+echo "Database: $PGDATABASE"
+echo "Host: $PGHOST"
+echo "Backup file: $BACKUP_FILE"
 
-# Perform database backup
-PGPASSWORD=$PGPASSWORD pg_dump -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME | gzip > $BACKUP_FILE
+# Perform the backup
+echo "Creating database backup..."
+pg_dump -h $PGHOST -p $PGPORT -U $PGUSER -d $PGDATABASE | gzip > $BACKUP_FILE
 
 # Check if backup was successful
 if [ $? -eq 0 ]; then
     echo "Backup completed successfully: $BACKUP_FILE"
+    
+    # Set file permissions
+    chmod 640 $BACKUP_FILE
+    
+    # Calculate backup size
+    BACKUP_SIZE=$(du -h $BACKUP_FILE | awk '{print $1}')
+    echo "Backup size: $BACKUP_SIZE"
+    
+    # Remove backups older than retention period
+    echo "Cleaning up old backups (older than $RETENTION_DAYS days)..."
+    find $BACKUP_DIR -name "*.sql.gz" -type f -mtime +$RETENTION_DAYS -delete
+    
+    # List remaining backups
+    echo "Current backups:"
+    ls -lh $BACKUP_DIR
 else
-    echo "Backup failed"
+    echo "Error: Backup failed"
     exit 1
 fi
 
-# Delete old backups
-echo "Cleaning up old backups (older than $BACKUP_RETENTION_DAYS days)"
-find $BACKUP_DIR -name "${DB_NAME}_*.sql.gz" -type f -mtime +$BACKUP_RETENTION_DAYS -delete
+# Optional: Copy backup to remote storage
+if [ -n "$REMOTE_BACKUP_ENABLED" ] && [ "$REMOTE_BACKUP_ENABLED" = "true" ]; then
+    echo "Copying backup to remote storage..."
+    
+    if [ -n "$S3_BUCKET" ]; then
+        echo "Copying to S3 bucket: $S3_BUCKET"
+        aws s3 cp $BACKUP_FILE s3://$S3_BUCKET/database-backups/
+    fi
+    
+    if [ -n "$REMOTE_HOST" ]; then
+        echo "Copying to remote host: $REMOTE_HOST"
+        scp $BACKUP_FILE $REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/
+    fi
+fi
 
 echo "Backup process completed"

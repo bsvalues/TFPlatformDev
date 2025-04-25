@@ -2,18 +2,39 @@ version: '3.8'
 
 services:
   web:
-    environment:
-      - FLASK_ENV=development
-      - DEBUG=true
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: terrafusion/terrafusion:dev
     volumes:
       - .:/app
-    ports:
-      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    command: gunicorn --bind 0.0.0.0:5000 --workers 1 --reload main:app
 
   postgres:
     ports:
       - "5432:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
 
-  redis:
-    ports:
-      - "6379:6379"
+  prometheus:
+    volumes:
+      - prometheus-dev-data:/prometheus
+
+  grafana:
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_DISABLE_GRAVATAR=true
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+    volumes:
+      - grafana-dev-data:/var/lib/grafana
+
+volumes:
+  postgres-dev-data:
+  prometheus-dev-data:
+  grafana-dev-data:

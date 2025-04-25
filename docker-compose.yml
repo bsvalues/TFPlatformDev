@@ -3,67 +3,116 @@ version: '3.8'
 services:
   web:
     build: .
+    image: terrafusion/terrafusion:latest
+    restart: always
     ports:
       - "5000:5000"
-    environment:
-      - DATABASE_URL=postgresql://${PGUSER}:${PGPASSWORD}@postgres:5432/${PGDATABASE}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - SESSION_SECRET=${SESSION_SECRET:-defaultsecretkey}
-    volumes:
-      - .:/app
     depends_on:
       - postgres
-    networks:
-      - terrafusion-network
-    restart: unless-stopped
+    environment:
+      - PGHOST=postgres
+      - PGPORT=5432
+      - PGUSER=${PGUSER:-postgres}
+      - PGPASSWORD=${PGPASSWORD}
+      - PGDATABASE=${PGDATABASE:-terrafusion}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - MCP_SERVER_PORT=8001
+      - MCP_API_KEY=${MCP_API_KEY}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - terrafusion-net
 
   postgres:
-    image: postgres:15-alpine
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
+    image: postgres:16
+    restart: always
     environment:
-      - POSTGRES_USER=${PGUSER}
+      - POSTGRES_USER=${PGUSER:-postgres}
       - POSTGRES_PASSWORD=${PGPASSWORD}
-      - POSTGRES_DB=${PGDATABASE}
+      - POSTGRES_DB=${PGDATABASE:-terrafusion}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    networks:
-      - terrafusion-network
-    restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${PGUSER} -d ${PGDATABASE}"]
+      test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
+    networks:
+      - terrafusion-net
 
-  redis:
-    image: redis:7-alpine
+  prometheus:
+    image: prom/prometheus:latest
+    restart: always
     volumes:
-      - redis_data:/data
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
     ports:
-      - "6379:6379"
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
     networks:
-      - terrafusion-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      - terrafusion-net
 
-networks:
-  terrafusion-network:
-    driver: bridge
+  grafana:
+    image: grafana/grafana:latest
+    restart: always
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - terrafusion-net
+
+  loki:
+    image: grafana/loki:latest
+    restart: always
+    volumes:
+      - ./monitoring/loki/loki-config.yaml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - terrafusion-net
+
+  promtail:
+    image: grafana/promtail:latest
+    restart: always
+    volumes:
+      - ./monitoring/promtail/promtail-config.yaml:/etc/promtail/config.yml
+      - /var/log:/var/log
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - terrafusion-net
 
 volumes:
-  postgres_data:
-  redis_data:
+  postgres-data:
+  prometheus-data:
+  grafana-data:
+  loki-data:
+
+networks:
+  terrafusion-net:
+    driver: bridge
