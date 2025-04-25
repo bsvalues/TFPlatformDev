@@ -61,7 +61,7 @@ def index():
 
 @app.route('/login')
 def login():
-    return render_template('improved_login.html')
+    return render_template('login_standalone.html')
 
 @app.route('/map')
 def map_view():
