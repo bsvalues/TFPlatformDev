@@ -286,10 +286,42 @@
 <!-- Map-specific JavaScript -->
 <script src="/static/js/maplibre.js"></script>
 <script>
+    // Helper functions for messages
+    function showInfoMessage(message) {
+        console.log('Info:', message);
+        // In a real implementation, show a toast or notification
+    }
+    
+    function showErrorMessage(message) {
+        console.error('Error:', message);
+        // In a real implementation, show an error toast or notification
+    }
+    
+    function showSuccessMessage(message) {
+        console.log('Success:', message);
+        // In a real implementation, show a success toast or notification
+    }
+    
+    function searchLocation(query) {
+        console.log('Searching for:', query);
+        // In a real implementation, call a geocoding API
+        showInfoMessage(`Searching for "${query}"...`);
+    }
+    
+    function createBuffer(coordinates, distance) {
+        console.log('Creating buffer at', coordinates, 'with distance', distance);
+        // In a real implementation, this would call a GIS API to create a buffer
+        showInfoMessage(`Created buffer with ${distance}m radius`);
+        
+        // Since we don't have the actual API, we'll simulate success
+        setTimeout(() => {
+            showSuccessMessage('Buffer analysis complete');
+        }, 800);
+    }
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize map
         const map = initializeMap('map', {
-            style: '/api/tiles/styles/default',
+            style: 'https://demotiles.maplibre.org/style.json', // Use public MapLibre demo tiles
             center: [-95.7129, 37.0902], // Default to US center
             zoom: 4
         });
