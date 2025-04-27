@@ -3,31 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TerraFusion Platform - A comprehensive microservices platform for geospatial data processing">
     <title>{% block title %}TerraFusion Platform{% endblock title %}</title>
+    
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
-    <!-- TerraFusion Custom Styles -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- TerraFusion Apple-inspired Styles -->
+    <link href="/static/css/terrafusion.css" rel="stylesheet">
+    
+    <!-- Legacy compatibility styles for existing components -->
     <style>
+        /* Map existing terra-* variables to tf-* variables for compatibility */
         :root {
-            --terra-primary: #2c8d6a;
-            --terra-secondary: #1a5d45;
-            --terra-accent: #48c795;
-            --terra-accent-rgb: 72, 199, 149;
-            --terra-highlight: #6fdfb2;
-            --terra-dark: #124430;
+            --terra-primary: var(--tf-primary);
+            --terra-secondary: var(--tf-primary-dark);
+            --terra-accent: var(--tf-accent);
+            --terra-highlight: var(--tf-primary-light);
+            --terra-dark: var(--tf-background-elevated);
         }
         
-        body {
-            background-color: #0c1920;
-        }
-        
+        /* Ensure legacy components still work with new design system */
         .navbar-dark {
-            background-color: var(--terra-dark) !important;
-            border-right: 1px solid rgba(255,255,255,0.1);
+            background-color: var(--tf-sidebar) !important;
+            border-right: 1px solid var(--tf-border-light);
         }
         
         .navbar-brand {
-            color: var(--terra-highlight) !important;
+            color: var(--tf-text-light) !important;
         }
         
         .nav-link.active {
