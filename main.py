@@ -67,6 +67,10 @@ def login():
 def map_view():
     return render_template('map.html')
 
+@app.route('/simple-map')
+def simple_map_view():
+    return render_template('simple_map.html')
+
 @app.route('/flow')
 def flow():
     return render_template('flow.html')
