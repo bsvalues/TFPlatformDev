@@ -11,8 +11,28 @@
 <style>
 #map {
     width: 100%;
-    height: calc(100vh - 3rem);
+    height: 600px;
     border-radius: 8px;
+}
+
+.tf-map-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.tf-map-sidebar {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 340px;
+    background-color: rgba(29, 29, 31, 0.9);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 10;
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    padding: 1rem;
 }
 
 /* Message container for notifications */
@@ -247,8 +267,6 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- Map-specific JavaScript -->
-<script src="/static/js/maplibre.js"></script>
 <script>
     // Helper functions for messages
     function showInfoMessage(message) {
@@ -282,12 +300,22 @@
             showSuccessMessage('Buffer analysis complete');
         }, 800);
     }
+    
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize map
-        const map = initializeMap('map', {
-            style: 'https://demotiles.maplibre.org/style.json', // Use public MapLibre demo tiles
+        // Create a map
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://demotiles.maplibre.org/style.json',
             center: [-95.7129, 37.0902], // Default to US center
             zoom: 4
+        });
+        
+        // Add navigation controls
+        map.addControl(new maplibregl.NavigationControl(), 'top-right');
+        
+        // Handle map load
+        map.on('load', function() {
+            console.log('Map loaded');
         });
         
         // Sidebar toggle functionality
