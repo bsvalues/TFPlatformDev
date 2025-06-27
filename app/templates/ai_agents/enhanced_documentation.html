@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agents Documentation - TerraFusion Platform</title>
+    
+    <!-- Apple-inspired typography -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <style>
+        :root {
+            --apple-blue: #0071e3;
+            --apple-blue-light: #40a0ff;
+            --apple-blue-dark: #0051a3;
+            --apple-background: #000000;
+            --apple-card: #1d1d1f;
+            --apple-sidebar: #141414;
+            --apple-border: rgba(255, 255, 255, 0.1);
+            --apple-text: #f5f5f7;
+            --apple-text-secondary: #86868b;
+            --apple-text-tertiary: #6e6e73;
+            --apple-green: #00c853;
+            --apple-orange: #ff9500;
+            --apple-red: #ff3b30;
+            --apple-radius-md: 12px;
+            --apple-radius-lg: 20px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background-color: var(--apple-background);
+            color: var(--apple-text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            margin-bottom: 2.5rem;
+        }
+        
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--apple-blue);
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .back-button:hover {
+            background-color: rgba(0, 113, 227, 0.1);
+        }
+        
+        .header-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header-subtitle {
+            font-size: 1.125rem;
+            color: var(--apple-text-secondary);
+            letter-spacing: -0.022em;
+            line-height: 1.4;
+        }
+        
+        .docs-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 3rem;
+        }
+        
+        .sidebar-nav {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-lg);
+            border: 1px solid var(--apple-border);
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+        }
+        
+        .nav-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--apple-text);
+        }
+        
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .nav-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--apple-text-tertiary);
+            letter-spacing: 0.08em;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .nav-link {
+            display: block;
+            color: var(--apple-text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 0;
+            font-size: 0.875rem;
+            border-bottom: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .nav-link:hover {
+            color: var(--apple-blue);
+        }
+        
+        .nav-link.active {
+            color: var(--apple-blue);
+            font-weight: 500;
+        }
+        
+        .docs-content {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-lg);
+            border: 1px solid var(--apple-border);
+            padding: 2rem;
+        }
+        
+        .section {
+            margin-bottom: 3rem;
+        }
+        
+        .section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--apple-text);
+        }
+        
+        .subsection-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem 0;
+            color: var(--apple-text);
+        }
+        
+        .docs-text {
+            color: var(--apple-text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+        }
+        
+        .code-block {
+            background-color: var(--apple-sidebar);
+            border: 1px solid var(--apple-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            color: var(--apple-text);
+        }
+        
+        .api-endpoint {
+            background-color: var(--apple-sidebar);
+            border: 1px solid var(--apple-border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .method-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-right: 0.75rem;
+        }
+        
+        .method-get {
+            background-color: rgba(0, 113, 227, 0.2);
+            color: var(--apple-blue);
+        }
+        
+        .method-post {
+            background-color: rgba(0, 200, 83, 0.2);
+            color: var(--apple-green);
+        }
+        
+        .method-put {
+            background-color: rgba(255, 149, 0, 0.2);
+            color: var(--apple-orange);
+        }
+        
+        .agent-card {
+            background-color: var(--apple-sidebar);
+            border: 1px solid var(--apple-border);
+            border-radius: var(--apple-radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .agent-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--apple-text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .agent-type {
+            font-size: 0.875rem;
+            color: var(--apple-blue);
+            background: rgba(0, 113, 227, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        
+        .agent-description {
+            color: var(--apple-text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .capability-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .capability-item {
+            color: var(--apple-text-secondary);
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .capability-item::before {
+            content: '✓';
+            color: var(--apple-green);
+            position: absolute;
+            left: 0;
+            font-weight: 600;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+        
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--apple-border);
+        }
+        
+        .table th {
+            background-color: var(--apple-sidebar);
+            font-weight: 600;
+            color: var(--apple-text);
+        }
+        
+        .table td {
+            color: var(--apple-text-secondary);
+        }
+        
+        @media (max-width: 768px) {
+            .docs-layout {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .sidebar-nav {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-button" onclick="window.location.href='/'">
+                <i data-feather="arrow-left" style="width: 16px; height: 16px; margin-right: 4px;"></i>
+                Back to Dashboard
+            </button>
+            <h1 class="header-title">AI Agents Documentation</h1>
+            <p class="header-subtitle">
+                Comprehensive guide to TerraFusion's multi-agent AI system
+            </p>
+        </div>
+        
+        <div class="docs-layout">
+            <nav class="sidebar-nav">
+                <h3 class="nav-title">Contents</h3>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Overview</div>
+                    <a href="#overview" class="nav-link active">Introduction</a>
+                    <a href="#architecture" class="nav-link">Architecture</a>
+                    <a href="#agents" class="nav-link">Available Agents</a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">API Reference</div>
+                    <a href="#api-endpoints" class="nav-link">Endpoints</a>
+                    <a href="#authentication" class="nav-link">Authentication</a>
+                    <a href="#examples" class="nav-link">Examples</a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Integration</div>
+                    <a href="#integration" class="nav-link">Getting Started</a>
+                    <a href="#best-practices" class="nav-link">Best Practices</a>
+                </div>
+            </nav>
+            
+            <main class="docs-content">
+                <section id="overview" class="section">
+                    <h2 class="section-title">Overview</h2>
+                    <p class="docs-text">
+                        TerraFusion's AI agent system provides a powerful multi-agent architecture for geospatial data processing, analysis, and decision support. Our agents combine the capabilities of OpenAI's GPT-4o and Anthropic's Claude-3.5-sonnet to deliver specialized functionality across different domains.
+                    </p>
+                    <p class="docs-text">
+                        The system is designed to handle complex geospatial workflows, from data validation and transformation to advanced analytics and visualization generation.
+                    </p>
+                </section>
+                
+                <section id="architecture" class="section">
+                    <h2 class="section-title">Architecture</h2>
+                    <p class="docs-text">
+                        The TerraFusion AI system follows a multi-agent coordination protocol (MCP) that enables seamless communication between specialized AI agents:
+                    </p>
+                    
+                    <h3 class="subsection-title">Agent Manager</h3>
+                    <p class="docs-text">
+                        Central coordination service that routes requests to appropriate agents based on task type and current agent availability.
+                    </p>
+                    
+                    <h3 class="subsection-title">Communication Protocol</h3>
+                    <p class="docs-text">
+                        WebSocket-based real-time communication enables agents to collaborate on complex multi-step workflows.
+                    </p>
+                </section>
+                
+                <section id="agents" class="section">
+                    <h2 class="section-title">Available Agents</h2>
+                    
+                    <div class="agent-card">
+                        <div class="agent-name">OpenAI Geospatial Agent</div>
+                        <div class="agent-type">Geospatial Analysis</div>
+                        <p class="agent-description">
+                            Specialized in spatial data analysis, coordinate transformations, and geometric operations.
+                        </p>
+                        <ul class="capability-list">
+                            <li class="capability-item">Spatial pattern recognition</li>
+                            <li class="capability-item">Buffer and intersection analysis</li>
+                            <li class="capability-item">Coordinate system transformations</li>
+                            <li class="capability-item">Topology validation</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="agent-card">
+                        <div class="agent-name">OpenAI Image Recognition Agent</div>
+                        <div class="agent-type">Image Analysis</div>
+                        <p class="agent-description">
+                            Processes satellite imagery, aerial photos, and map visualizations for feature extraction.
+                        </p>
+                        <ul class="capability-list">
+                            <li class="capability-item">Land use classification</li>
+                            <li class="capability-item">Change detection</li>
+                            <li class="capability-item">Feature extraction</li>
+                            <li class="capability-item">Quality assessment</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="agent-card">
+                        <div class="agent-name">Anthropic Document Agent</div>
+                        <div class="agent-type">Document Analysis</div>
+                        <p class="agent-description">
+                            Analyzes planning documents, regulations, and technical specifications.
+                        </p>
+                        <ul class="capability-list">
+                            <li class="capability-item">Policy interpretation</li>
+                            <li class="capability-item">Compliance checking</li>
+                            <li class="capability-item">Document summarization</li>
+                            <li class="capability-item">Regulatory analysis</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="agent-card">
+                        <div class="agent-name">Anthropic Decision Support Agent</div>
+                        <div class="agent-type">Decision Support</div>
+                        <p class="agent-description">
+                            Provides strategic recommendations and decision support for planning scenarios.
+                        </p>
+                        <ul class="capability-list">
+                            <li class="capability-item">Scenario analysis</li>
+                            <li class="capability-item">Risk assessment</li>
+                            <li class="capability-item">Alternative evaluation</li>
+                            <li class="capability-item">Impact prediction</li>
+                        </ul>
+                    </div>
+                </section>
+                
+                <section id="api-endpoints" class="section">
+                    <h2 class="section-title">API Endpoints</h2>
+                    
+                    <div class="api-endpoint">
+                        <span class="method-badge method-get">GET</span>
+                        <code>/api/agents</code>
+                        <p class="docs-text">List all available AI agents and their current status.</p>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <span class="method-badge method-post">POST</span>
+                        <code>/api/agents/{agent_id}/execute</code>
+                        <p class="docs-text">Execute a task with a specific agent.</p>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <span class="method-badge method-get">GET</span>
+                        <code>/api/agents/{agent_id}/status</code>
+                        <p class="docs-text">Get the current status and queue information for an agent.</p>
+                    </div>
+                </section>
+                
+                <section id="authentication" class="section">
+                    <h2 class="section-title">Authentication</h2>
+                    <p class="docs-text">
+                        All API requests require authentication using JWT tokens. Include the token in the Authorization header:
+                    </p>
+                    <div class="code-block">
+Authorization: Bearer your_jwt_token_here</div>
+                </section>
+                
+                <section id="examples" class="section">
+                    <h2 class="section-title">Usage Examples</h2>
+                    
+                    <h3 class="subsection-title">Execute Geospatial Analysis</h3>
+                    <div class="code-block">
+curl -X POST /api/agents/openai_geospatial/execute \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your_token" \
+  -d '{
+    "operation": "buffer_analysis",
+    "parameters": {
+      "geometry": "POINT(-122.4194 37.7749)",
+      "buffer_distance": 1000,
+      "unit": "meters"
+    }
+  }'</div>
+                    
+                    <h3 class="subsection-title">Document Analysis Request</h3>
+                    <div class="code-block">
+curl -X POST /api/agents/anthropic_document/execute \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your_token" \
+  -d '{
+    "operation": "analyze_zoning",
+    "parameters": {
+      "document_text": "Zoning ordinance text...",
+      "query": "commercial development restrictions"
+    }
+  }'</div>
+                </section>
+                
+                <section id="integration" class="section">
+                    <h2 class="section-title">Integration Guide</h2>
+                    <p class="docs-text">
+                        To integrate TerraFusion AI agents into your application:
+                    </p>
+                    
+                    <h3 class="subsection-title">1. Obtain API Credentials</h3>
+                    <p class="docs-text">Contact your system administrator to obtain API credentials and appropriate access levels.</p>
+                    
+                    <h3 class="subsection-title">2. Initialize Connection</h3>
+                    <p class="docs-text">Establish a connection to the agent manager and verify agent availability.</p>
+                    
+                    <h3 class="subsection-title">3. Submit Tasks</h3>
+                    <p class="docs-text">Submit tasks to appropriate agents based on your analysis requirements.</p>
+                </section>
+                
+                <section id="best-practices" class="section">
+                    <h2 class="section-title">Best Practices</h2>
+                    
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Practice</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Agent Selection</td>
+                                <td>Choose the most appropriate agent for each task type</td>
+                            </tr>
+                            <tr>
+                                <td>Error Handling</td>
+                                <td>Implement robust error handling and retry logic</td>
+                            </tr>
+                            <tr>
+                                <td>Rate Limiting</td>
+                                <td>Respect API rate limits to ensure system stability</td>
+                            </tr>
+                            <tr>
+                                <td>Data Privacy</td>
+                                <td>Ensure sensitive data is properly handled and secured</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+            </main>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+        
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    
+                    // Update active link
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                }
+            });
+        });
+        
+        // Update active navigation on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let currentSection = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                if (window.scrollY >= sectionTop) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${currentSection}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

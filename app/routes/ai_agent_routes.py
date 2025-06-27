@@ -113,7 +113,7 @@ def agent_docs():
     Returns:
         Rendered template with documentation
     """
-    return render_template('ai_agents/documentation.html')
+    return render_template('ai_agents/enhanced_documentation.html')
 
 def register_ai_agent_ui_routes(app):
     """
