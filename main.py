@@ -57,7 +57,7 @@ except ImportError:
 # Create routes for main pages
 @app.route('/')
 def index():
-    return render_template('apple_dashboard.html')  # Using Apple-inspired dashboard
+    return render_template('enhanced_dashboard.html')  # Using enhanced Apple-inspired dashboard
 
 @app.route('/login')
 def login():
@@ -65,7 +65,7 @@ def login():
 
 @app.route('/map')
 def map_view():
-    return render_template('map.html')
+    return render_template('enhanced_map.html')
 
 @app.route('/simple-map')
 def simple_map_view():

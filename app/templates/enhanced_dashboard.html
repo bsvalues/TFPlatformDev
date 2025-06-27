@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraFusion Platform</title>
+    
+    <!-- Apple-inspired typography -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --apple-blue: #0071e3;
+            --apple-blue-light: #40a0ff;
+            --apple-blue-dark: #0051a3;
+            --apple-background: #000000;
+            --apple-card: #1d1d1f;
+            --apple-sidebar: #141414;
+            --apple-border: rgba(255, 255, 255, 0.1);
+            --apple-text: #f5f5f7;
+            --apple-text-secondary: #86868b;
+            --apple-text-tertiary: #6e6e73;
+            --apple-green: #00c853;
+            --apple-orange: #ff9500;
+            --apple-red: #ff3b30;
+            --apple-radius-md: 12px;
+            --apple-radius-lg: 20px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background-color: var(--apple-background);
+            color: var(--apple-text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 270px;
+            background-color: var(--apple-sidebar);
+            border-right: 1px solid var(--apple-border);
+            padding: 1.5rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        
+        .sidebar-header {
+            padding: 0 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .sidebar-logo {
+            color: var(--apple-text);
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.022em;
+        }
+        
+        .nav-group {
+            margin-bottom: 2rem;
+        }
+        
+        .nav-group-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--apple-text-tertiary);
+            letter-spacing: 0.08em;
+            padding: 0 1.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--apple-text);
+            padding: 0.65rem 1.5rem;
+            margin: 0 0.75rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: 0.9375rem;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: translateX(2px);
+        }
+        
+        .nav-link.active {
+            color: white;
+            background-color: rgba(0, 113, 227, 0.2);
+        }
+        
+        .nav-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 270px;
+            padding: 2rem;
+        }
+        
+        .header-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .header-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header-subtitle {
+            font-size: 1.125rem;
+            color: var(--apple-text-secondary);
+            letter-spacing: -0.022em;
+            line-height: 1.4;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        .stat-card {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-md);
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-title {
+            font-size: 0.875rem;
+            color: var(--apple-text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-change {
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .stat-change.positive {
+            color: var(--apple-green);
+        }
+        
+        .stat-change.negative {
+            color: var(--apple-red);
+        }
+        
+        /* Feature Cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        .feature-card {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-lg);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        }
+        
+        .feature-card-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--apple-blue), var(--apple-blue-light));
+        }
+        
+        .feature-card-body {
+            padding: 1.5rem;
+        }
+        
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature-description {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9375rem;
+            line-height: 1.5;
+        }
+        
+        /* System Status */
+        .system-status {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-lg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            margin-bottom: 2.5rem;
+        }
+        
+        .system-status-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--apple-border);
+        }
+        
+        .system-status-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1px;
+            background-color: var(--apple-border);
+        }
+        
+        .status-item {
+            background-color: var(--apple-card);
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .status-label {
+            font-size: 0.9375rem;
+            font-weight: 500;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-online .status-dot {
+            background-color: var(--apple-green);
+        }
+        
+        .status-offline .status-dot {
+            background-color: var(--apple-red);
+        }
+        
+        .status-warning .status-dot {
+            background-color: var(--apple-orange);
+        }
+        
+        /* Charts */
+        .chart-container {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-lg);
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 2.5rem;
+        }
+        
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+                position: fixed;
+                bottom: 1.5rem;
+                right: 1.5rem;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background-color: var(--apple-blue);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                z-index: 110;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                border: none;
+                cursor: pointer;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">TerraFusion</div>
+            </div>
+            
+            <div class="nav-group">
+                <div class="nav-group-title">Platform</div>
+                <a href="/" class="nav-link active">
+                    <i data-feather="home" class="nav-icon"></i>
+                    Dashboard
+                </a>
+                <a href="/map" class="nav-link">
+                    <i data-feather="map" class="nav-icon"></i>
+                    TerraMap
+                </a>
+                <a href="/flow" class="nav-link">
+                    <i data-feather="git-branch" class="nav-icon"></i>
+                    TerraFlow
+                </a>
+                <a href="/insight" class="nav-link">
+                    <i data-feather="brain" class="nav-icon"></i>
+                    TerraInsight
+                </a>
+                <a href="/audit" class="nav-link">
+                    <i data-feather="shield" class="nav-icon"></i>
+                    TerraAudit
+                </a>
+            </div>
+            
+            <div class="nav-group">
+                <div class="nav-group-title">AI Agents</div>
+                <a href="/ai-agents" class="nav-link">
+                    <i data-feather="cpu" class="nav-icon"></i>
+                    Agent Manager
+                </a>
+                <a href="/ai-agents/docs" class="nav-link">
+                    <i data-feather="book" class="nav-icon"></i>
+                    Documentation
+                </a>
+            </div>
+            
+            <div class="nav-group">
+                <div class="nav-group-title">Account</div>
+                <a href="/login" class="nav-link">
+                    <i data-feather="user" class="nav-icon"></i>
+                    Sign In
+                </a>
+            </div>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header-section">
+                <h1 class="header-title">Welcome to TerraFusion</h1>
+                <p class="header-subtitle">
+                    Your comprehensive geospatial data processing platform with AI-powered insights
+                </p>
+            </div>
+            
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Active Projects</div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-change positive">
+                        <i data-feather="trending-up" style="width: 16px; height: 16px; margin-right: 4px;"></i>
+                        +8% from last month
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-title">Data Processed</div>
+                    <div class="stat-value">2.4TB</div>
+                    <div class="stat-change positive">
+                        <i data-feather="trending-up" style="width: 16px; height: 16px; margin-right: 4px;"></i>
+                        +15% from last month
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-title">AI Analysis</div>
+                    <div class="stat-value">1,847</div>
+                    <div class="stat-change positive">
+                        <i data-feather="trending-up" style="width: 16px; height: 16px; margin-right: 4px;"></i>
+                        +23% from last month
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-title">System Health</div>
+                    <div class="stat-value">99.8%</div>
+                    <div class="stat-change positive">
+                        <i data-feather="check-circle" style="width: 16px; height: 16px; margin-right: 4px;"></i>
+                        All systems operational
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feature Cards -->
+            <div class="features-grid">
+                <div class="feature-card" onclick="window.location.href='/map'">
+                    <div class="feature-card-header">
+                        <h3 class="feature-title">TerraMap</h3>
+                        <p class="feature-description">Interactive geospatial visualization</p>
+                    </div>
+                    <div class="feature-card-body">
+                        <p>Explore your data with advanced mapping capabilities, layer management, and real-time updates.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-card" onclick="window.location.href='/flow'">
+                    <div class="feature-card-header">
+                        <h3 class="feature-title">TerraFlow</h3>
+                        <p class="feature-description">ETL data processing pipelines</p>
+                    </div>
+                    <div class="feature-card-body">
+                        <p>Automate data ingestion, transformation, and validation with robust pipeline management.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-card" onclick="window.location.href='/insight'">
+                    <div class="feature-card-header">
+                        <h3 class="feature-title">TerraInsight</h3>
+                        <p class="feature-description">AI-powered analytics</p>
+                    </div>
+                    <div class="feature-card-body">
+                        <p>Leverage machine learning for pattern recognition, predictive analysis, and automated insights.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-card" onclick="window.location.href='/audit'">
+                    <div class="feature-card-header">
+                        <h3 class="feature-title">TerraAudit</h3>
+                        <p class="feature-description">Data quality & compliance</p>
+                    </div>
+                    <div class="feature-card-body">
+                        <p>Monitor data integrity, track changes, and ensure compliance with governance standards.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- System Status -->
+            <div class="system-status">
+                <div class="system-status-header">
+                    <h3 class="system-status-title">System Status</h3>
+                </div>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <span class="status-label">PostgreSQL Database</span>
+                        <div class="status-indicator status-online">
+                            <div class="status-dot"></div>
+                            Online
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">AI Agent Manager</span>
+                        <div class="status-indicator status-online">
+                            <div class="status-dot"></div>
+                            6 Agents Active
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">MCP Server</span>
+                        <div class="status-indicator status-online">
+                            <div class="status-dot"></div>
+                            Running
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Data Pipeline</span>
+                        <div class="status-indicator status-online">
+                            <div class="status-dot"></div>
+                            Processing
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chart -->
+            <div class="chart-container">
+                <h3 class="chart-title">Data Processing Activity</h3>
+                <canvas id="activityChart" width="400" height="200"></canvas>
+            </div>
+        </main>
+        
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" style="display: none;">
+            <i data-feather="menu"></i>
+        </button>
+    </div>
+    
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+        
+        // Mobile menu toggle
+        const sidebar = document.getElementById('sidebar');
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        
+        mobileMenuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('show');
+        });
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 991 && !sidebar.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+                sidebar.classList.remove('show');
+            }
+        });
+        
+        // Activity Chart
+        const ctx = document.getElementById('activityChart').getContext('2d');
+        const activityChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Data Processed (GB)',
+                    data: [120, 190, 300, 500, 200, 300],
+                    borderColor: '#0071e3',
+                    backgroundColor: 'rgba(0, 113, 227, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#f5f5f7'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: '#86868b'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: '#86868b'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Update navigation active state
+        const currentPath = window.location.pathname;
+        document.querySelectorAll('.nav-link').forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

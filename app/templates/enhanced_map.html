@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraMap - Interactive Geospatial Platform</title>
+    
+    <!-- MapLibre GL JS -->
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Apple-inspired typography -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    
+    <style>
+        :root {
+            --apple-blue: #0071e3;
+            --apple-blue-light: #40a0ff;
+            --apple-blue-dark: #0051a3;
+            --apple-background: #000000;
+            --apple-card: #1d1d1f;
+            --apple-sidebar: #141414;
+            --apple-border: rgba(255, 255, 255, 0.1);
+            --apple-text: #f5f5f7;
+            --apple-text-secondary: #86868b;
+            --apple-text-tertiary: #6e6e73;
+            --apple-green: #00c853;
+            --apple-orange: #ff9500;
+            --apple-red: #ff3b30;
+            --apple-radius-md: 12px;
+            --apple-radius-lg: 20px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background-color: var(--apple-background);
+            color: var(--apple-text);
+            overflow: hidden;
+        }
+        
+        .map-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Header Bar */
+        .header-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--apple-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 1000;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--apple-blue);
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin-right: 1rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .back-button:hover {
+            background-color: rgba(0, 113, 227, 0.1);
+        }
+        
+        .header-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--apple-text);
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .header-button {
+            background: none;
+            border: none;
+            color: var(--apple-text);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .header-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Sidebar Panel */
+        .sidebar-panel {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            width: 350px;
+            height: calc(100vh - 60px);
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--apple-border);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 900;
+            overflow-y: auto;
+        }
+        
+        .sidebar-panel.open {
+            transform: translateX(0);
+        }
+        
+        .sidebar-content {
+            padding: 1.5rem;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+        
+        .sidebar-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--apple-text);
+            margin-bottom: 1rem;
+        }
+        
+        /* Search Box */
+        .search-box {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--apple-border);
+            border-radius: var(--apple-radius-md);
+            background-color: var(--apple-card);
+            color: var(--apple-text);
+            font-size: 0.875rem;
+            outline: none;
+        }
+        
+        .search-input:focus {
+            border-color: var(--apple-blue);
+            box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.1);
+        }
+        
+        .search-button {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--apple-blue);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            padding: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Tool Buttons */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+        
+        .tool-button {
+            background: var(--apple-card);
+            border: 1px solid var(--apple-border);
+            border-radius: var(--apple-radius-md);
+            color: var(--apple-text);
+            padding: 0.75rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 0.5rem;
+        }
+        
+        .tool-button:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--apple-blue);
+        }
+        
+        .tool-button.active {
+            background: rgba(0, 113, 227, 0.2);
+            border-color: var(--apple-blue);
+        }
+        
+        /* Layer Controls */
+        .layer-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .layer-group h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--apple-text-secondary);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .layer-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--apple-border);
+        }
+        
+        .layer-item:last-child {
+            border-bottom: none;
+        }
+        
+        .layer-label {
+            font-size: 0.875rem;
+            color: var(--apple-text);
+        }
+        
+        .layer-toggle {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background: var(--apple-border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .layer-toggle.active {
+            background: var(--apple-blue);
+        }
+        
+        .layer-toggle::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+        
+        .layer-toggle.active::before {
+            transform: translateX(20px);
+        }
+        
+        /* Bottom Controls */
+        .bottom-controls {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+            z-index: 800;
+        }
+        
+        .control-button {
+            width: 40px;
+            height: 40px;
+            background: rgba(20, 20, 20, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--apple-border);
+            border-radius: 8px;
+            color: var(--apple-text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .control-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--apple-blue);
+        }
+        
+        /* Coordinates Display */
+        .coordinates-display {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: rgba(20, 20, 20, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--apple-border);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            color: var(--apple-text-secondary);
+            font-family: 'Monaco', 'Menlo', monospace;
+            z-index: 800;
+        }
+        
+        /* Notification */
+        .notification {
+            position: absolute;
+            top: 80px;
+            right: 1.5rem;
+            background: var(--apple-card);
+            border: 1px solid var(--apple-border);
+            border-radius: var(--apple-radius-md);
+            padding: 1rem;
+            max-width: 300px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1100;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-left: 4px solid var(--apple-green);
+        }
+        
+        .notification.error {
+            border-left: 4px solid var(--apple-red);
+        }
+        
+        .notification.warning {
+            border-left: 4px solid var(--apple-orange);
+        }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .sidebar-panel {
+                width: 100%;
+                right: 0;
+                transform: translateX(100%);
+            }
+            
+            .header-bar {
+                padding: 0 1rem;
+            }
+            
+            .bottom-controls {
+                bottom: 1rem;
+                left: 1rem;
+            }
+            
+            .coordinates-display {
+                bottom: 1rem;
+                right: 1rem;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="map-container">
+        <!-- Header Bar -->
+        <div class="header-bar">
+            <div class="header-left">
+                <button class="back-button" onclick="window.location.href='/'">
+                    <i data-feather="arrow-left" style="width: 16px; height: 16px; margin-right: 4px;"></i>
+                    Back to Dashboard
+                </button>
+                <h1 class="header-title">TerraMap</h1>
+            </div>
+            <div class="header-right">
+                <button class="header-button" id="layersToggle" title="Layers">
+                    <i data-feather="layers" style="width: 20px; height: 20px;"></i>
+                </button>
+                <button class="header-button" id="toolsToggle" title="Tools">
+                    <i data-feather="tool" style="width: 20px; height: 20px;"></i>
+                </button>
+                <button class="header-button" id="shareButton" title="Share">
+                    <i data-feather="share-2" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Map -->
+        <div id="map"></div>
+        
+        <!-- Sidebar Panel -->
+        <div class="sidebar-panel" id="sidebarPanel">
+            <div class="sidebar-content">
+                <!-- Search Section -->
+                <div class="sidebar-section">
+                    <h3>Search Location</h3>
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="searchInput" placeholder="Enter address or coordinates...">
+                        <button class="search-button" id="searchButton">
+                            <i data-feather="search" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Tools Section -->
+                <div class="sidebar-section" id="toolsSection">
+                    <h3>Analysis Tools</h3>
+                    <div class="tool-grid">
+                        <button class="tool-button" id="measureTool">
+                            <i data-feather="ruler" style="width: 20px; height: 20px;"></i>
+                            <span>Measure</span>
+                        </button>
+                        <button class="tool-button" id="bufferTool">
+                            <i data-feather="circle" style="width: 20px; height: 20px;"></i>
+                            <span>Buffer</span>
+                        </button>
+                        <button class="tool-button" id="drawTool">
+                            <i data-feather="edit-3" style="width: 20px; height: 20px;"></i>
+                            <span>Draw</span>
+                        </button>
+                        <button class="tool-button" id="selectionTool">
+                            <i data-feather="mouse-pointer" style="width: 20px; height: 20px;"></i>
+                            <span>Select</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Layers Section -->
+                <div class="sidebar-section" id="layersSection">
+                    <h3>Map Layers</h3>
+                    
+                    <div class="layer-group">
+                        <h4>Base Maps</h4>
+                        <div class="layer-item">
+                            <span class="layer-label">OpenStreetMap</span>
+                            <div class="layer-toggle active" data-layer="osm"></div>
+                        </div>
+                        <div class="layer-item">
+                            <span class="layer-label">Satellite</span>
+                            <div class="layer-toggle" data-layer="satellite"></div>
+                        </div>
+                        <div class="layer-item">
+                            <span class="layer-label">Terrain</span>
+                            <div class="layer-toggle" data-layer="terrain"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="layer-group">
+                        <h4>Data Layers</h4>
+                        <div class="layer-item">
+                            <span class="layer-label">County Boundaries</span>
+                            <div class="layer-toggle" data-layer="counties"></div>
+                        </div>
+                        <div class="layer-item">
+                            <span class="layer-label">Property Parcels</span>
+                            <div class="layer-toggle" data-layer="parcels"></div>
+                        </div>
+                        <div class="layer-item">
+                            <span class="layer-label">Infrastructure</span>
+                            <div class="layer-toggle" data-layer="infrastructure"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Controls -->
+        <div class="bottom-controls">
+            <button class="control-button" id="zoomIn" title="Zoom In">
+                <i data-feather="plus" style="width: 20px; height: 20px;"></i>
+            </button>
+            <button class="control-button" id="zoomOut" title="Zoom Out">
+                <i data-feather="minus" style="width: 20px; height: 20px;"></i>
+            </button>
+            <button class="control-button" id="resetView" title="Reset View">
+                <i data-feather="home" style="width: 20px; height: 20px;"></i>
+            </button>
+            <button class="control-button" id="myLocation" title="My Location">
+                <i data-feather="crosshair" style="width: 20px; height: 20px;"></i>
+            </button>
+        </div>
+        
+        <!-- Coordinates Display -->
+        <div class="coordinates-display" id="coordinatesDisplay">
+            Lat: 0.0000, Lng: 0.0000
+        </div>
+        
+        <!-- Notification -->
+        <div class="notification" id="notification">
+            <div id="notificationContent"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+        
+        // Initialize MapLibre GL Map
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: {
+                version: 8,
+                sources: {
+                    'osm-tiles': {
+                        type: 'raster',
+                        tiles: [
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+                        ],
+                        tileSize: 256,
+                        attribution: '© OpenStreetMap contributors'
+                    }
+                },
+                layers: [{
+                    id: 'osm-layer',
+                    type: 'raster',
+                    source: 'osm-tiles'
+                }]
+            },
+            center: [-98.5795, 39.8283], // Geographic center of USA
+            zoom: 4,
+            pitch: 0,
+            bearing: 0
+        });
+        
+        // Add navigation controls
+        map.addControl(new maplibregl.NavigationControl(), 'top-right');
+        map.addControl(new maplibregl.ScaleControl());
+        map.addControl(new maplibregl.FullscreenControl());
+        
+        // Sidebar toggle functionality
+        const sidebarPanel = document.getElementById('sidebarPanel');
+        const layersToggle = document.getElementById('layersToggle');
+        const toolsToggle = document.getElementById('toolsToggle');
+        const layersSection = document.getElementById('layersSection');
+        const toolsSection = document.getElementById('toolsSection');
+        
+        let sidebarOpen = false;
+        let currentSection = 'layers';
+        
+        layersToggle.addEventListener('click', () => {
+            currentSection = 'layers';
+            toggleSidebar();
+            showSection('layers');
+        });
+        
+        toolsToggle.addEventListener('click', () => {
+            currentSection = 'tools';
+            toggleSidebar();
+            showSection('tools');
+        });
+        
+        function toggleSidebar() {
+            sidebarOpen = !sidebarOpen;
+            sidebarPanel.classList.toggle('open', sidebarOpen);
+        }
+        
+        function showSection(section) {
+            if (section === 'layers') {
+                layersSection.style.display = 'block';
+                toolsSection.style.display = 'block';
+            } else {
+                layersSection.style.display = 'block';
+                toolsSection.style.display = 'block';
+            }
+        }
+        
+        // Layer toggle functionality
+        document.querySelectorAll('.layer-toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const isActive = toggle.classList.contains('active');
+                const layerType = toggle.dataset.layer;
+                
+                // Remove active from other base map layers
+                if (['osm', 'satellite', 'terrain'].includes(layerType)) {
+                    document.querySelectorAll('.layer-toggle[data-layer="osm"], .layer-toggle[data-layer="satellite"], .layer-toggle[data-layer="terrain"]')
+                        .forEach(t => t.classList.remove('active'));
+                }
+                
+                toggle.classList.toggle('active');
+                
+                // Handle layer switching logic here
+                switchBaseLayer(layerType);
+                showNotification(`${layerType} layer ${toggle.classList.contains('active') ? 'enabled' : 'disabled'}`, 'success');
+            });
+        });
+        
+        function switchBaseLayer(layerType) {
+            // Remove existing layers
+            if (map.getLayer('osm-layer')) map.removeLayer('osm-layer');
+            if (map.getLayer('satellite-layer')) map.removeLayer('satellite-layer');
+            if (map.getLayer('terrain-layer')) map.removeLayer('terrain-layer');
+            
+            // Remove existing sources
+            if (map.getSource('osm-tiles')) map.removeSource('osm-tiles');
+            if (map.getSource('satellite-tiles')) map.removeSource('satellite-tiles');
+            if (map.getSource('terrain-tiles')) map.removeSource('terrain-tiles');
+            
+            // Add new layer based on selection
+            switch(layerType) {
+                case 'osm':
+                    map.addSource('osm-tiles', {
+                        type: 'raster',
+                        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                        tileSize: 256
+                    });
+                    map.addLayer({
+                        id: 'osm-layer',
+                        type: 'raster',
+                        source: 'osm-tiles'
+                    });
+                    break;
+                case 'satellite':
+                    map.addSource('satellite-tiles', {
+                        type: 'raster',
+                        tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+                        tileSize: 256
+                    });
+                    map.addLayer({
+                        id: 'satellite-layer',
+                        type: 'raster',
+                        source: 'satellite-tiles'
+                    });
+                    break;
+                case 'terrain':
+                    map.addSource('terrain-tiles', {
+                        type: 'raster',
+                        tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}'],
+                        tileSize: 256
+                    });
+                    map.addLayer({
+                        id: 'terrain-layer',
+                        type: 'raster',
+                        source: 'terrain-tiles'
+                    });
+                    break;
+            }
+        }
+        
+        // Tool functionality
+        document.querySelectorAll('.tool-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active from all tools
+                document.querySelectorAll('.tool-button').forEach(b => b.classList.remove('active'));
+                button.classList.add('active');
+                
+                const toolType = button.id;
+                activateTool(toolType);
+            });
+        });
+        
+        function activateTool(toolType) {
+            showNotification(`${toolType.replace('Tool', '')} tool activated`, 'success');
+            // Tool-specific logic would go here
+        }
+        
+        // Search functionality
+        const searchButton = document.getElementById('searchButton');
+        const searchInput = document.getElementById('searchInput');
+        
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+        
+        function performSearch() {
+            const query = searchInput.value.trim();
+            if (!query) return;
+            
+            // Simple coordinate search (lat,lng format)
+            const coordMatch = query.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+            if (coordMatch) {
+                const lat = parseFloat(coordMatch[1]);
+                const lng = parseFloat(coordMatch[2]);
+                map.flyTo({ center: [lng, lat], zoom: 12 });
+                showNotification(`Navigated to ${lat}, ${lng}`, 'success');
+                return;
+            }
+            
+            // For real implementation, you would integrate with a geocoding service
+            showNotification('Geocoding service integration needed for address search', 'warning');
+        }
+        
+        // Bottom control buttons
+        document.getElementById('zoomIn').addEventListener('click', () => map.zoomIn());
+        document.getElementById('zoomOut').addEventListener('click', () => map.zoomOut());
+        document.getElementById('resetView').addEventListener('click', () => {
+            map.flyTo({ center: [-98.5795, 39.8283], zoom: 4, pitch: 0, bearing: 0 });
+        });
+        
+        document.getElementById('myLocation').addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const { latitude, longitude } = position.coords;
+                    map.flyTo({ center: [longitude, latitude], zoom: 15 });
+                    showNotification('Located your position', 'success');
+                }, () => {
+                    showNotification('Unable to access location', 'error');
+                });
+            } else {
+                showNotification('Geolocation not supported', 'error');
+            }
+        });
+        
+        // Coordinates display
+        const coordinatesDisplay = document.getElementById('coordinatesDisplay');
+        map.on('mousemove', (e) => {
+            const { lng, lat } = e.lngLat;
+            coordinatesDisplay.textContent = `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`;
+        });
+        
+        // Share button
+        document.getElementById('shareButton').addEventListener('click', () => {
+            const center = map.getCenter();
+            const zoom = map.getZoom();
+            const shareUrl = `${window.location.origin}/map?lat=${center.lat.toFixed(4)}&lng=${center.lng.toFixed(4)}&zoom=${zoom.toFixed(2)}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'TerraMap Location',
+                    url: shareUrl
+                });
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareUrl);
+                showNotification('Map URL copied to clipboard', 'success');
+            }
+        });
+        
+        // Notification system
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const content = document.getElementById('notificationContent');
+            
+            content.textContent = message;
+            notification.className = `notification show ${type}`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Handle URL parameters for shared links
+        const urlParams = new URLSearchParams(window.location.search);
+        const lat = urlParams.get('lat');
+        const lng = urlParams.get('lng');
+        const zoom = urlParams.get('zoom');
+        
+        if (lat && lng) {
+            map.setCenter([parseFloat(lng), parseFloat(lat)]);
+            if (zoom) map.setZoom(parseFloat(zoom));
+        }
+        
+        // Map load event
+        map.on('load', () => {
+            showNotification('TerraMap loaded successfully', 'success');
+        });
+        
+        // Close sidebar when clicking on map
+        map.on('click', () => {
+            if (sidebarOpen) {
+                sidebarOpen = false;
+                sidebarPanel.classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html>
