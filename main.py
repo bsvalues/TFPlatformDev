@@ -73,15 +73,15 @@ def simple_map_view():
 
 @app.route('/flow')
 def flow():
-    return render_template('flow.html')
+    return render_template('enhanced_flow.html')
 
 @app.route('/insight')
 def insight():
-    return render_template('insight.html')
+    return render_template('enhanced_insight.html')
 
 @app.route('/audit')
 def audit():
-    return render_template('audit.html')
+    return render_template('enhanced_audit.html')
 
 # API routes - simplified for now
 @app.route('/api/auth/login', methods=['POST'])

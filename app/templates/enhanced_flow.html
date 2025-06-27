@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraFlow - ETL Pipeline Manager</title>
+    
+    <!-- Apple-inspired typography -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --apple-blue: #0071e3;
+            --apple-blue-light: #40a0ff;
+            --apple-blue-dark: #0051a3;
+            --apple-background: #000000;
+            --apple-card: #1d1d1f;
+            --apple-sidebar: #141414;
+            --apple-border: rgba(255, 255, 255, 0.1);
+            --apple-text: #f5f5f7;
+            --apple-text-secondary: #86868b;
+            --apple-text-tertiary: #6e6e73;
+            --apple-green: #00c853;
+            --apple-orange: #ff9500;
+            --apple-red: #ff3b30;
+            --apple-radius-md: 12px;
+            --apple-radius-lg: 20px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background-color: var(--apple-background);
+            color: var(--apple-text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            margin-bottom: 2.5rem;
+        }
+        
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--apple-blue);
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .back-button:hover {
+            background-color: rgba(0, 113, 227, 0.1);
+        }
+        
+        .header-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header-subtitle {
+            font-size: 1.125rem;
+            color: var(--apple-text-secondary);
+            letter-spacing: -0.022em;
+            line-height: 1.4;
+        }
+        
+        .pipeline-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .pipeline-canvas {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-lg);
+            border: 1px solid var(--apple-border);
+            padding: 2rem;
+            min-height: 600px;
+            position: relative;
+        }
+        
+        .pipeline-toolbar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .toolbar-button {
+            background: var(--apple-sidebar);
+            border: 1px solid var(--apple-border);
+            border-radius: 8px;
+            color: var(--apple-text);
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .toolbar-button:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--apple-blue);
+        }
+        
+        .toolbar-button.active {
+            background: rgba(0, 113, 227, 0.2);
+            border-color: var(--apple-blue);
+            color: var(--apple-blue);
+        }
+        
+        .pipeline-stage {
+            background: linear-gradient(135deg, var(--apple-blue), var(--apple-blue-light));
+            border-radius: var(--apple-radius-md);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .pipeline-stage:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 113, 227, 0.3);
+        }
+        
+        .stage-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stage-description {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+        
+        .stage-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .status-badge.running {
+            background: rgba(0, 200, 83, 0.2);
+            color: var(--apple-green);
+        }
+        
+        .status-badge.completed {
+            background: rgba(0, 200, 83, 0.3);
+            color: white;
+        }
+        
+        .status-badge.pending {
+            background: rgba(255, 149, 0, 0.2);
+            color: var(--apple-orange);
+        }
+        
+        .sidebar {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-lg);
+            border: 1px solid var(--apple-border);
+            padding: 1.5rem;
+            height: fit-content;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+        
+        .sidebar-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .metric-card {
+            background: var(--apple-sidebar);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--apple-border);
+        }
+        
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--apple-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .pipeline-list {
+            margin-top: 2rem;
+        }
+        
+        .pipeline-item {
+            background-color: var(--apple-card);
+            border: 1px solid var(--apple-border);
+            border-radius: var(--apple-radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .pipeline-item:hover {
+            border-color: var(--apple-blue);
+        }
+        
+        .pipeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .pipeline-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .pipeline-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .action-button {
+            background: none;
+            border: 1px solid var(--apple-border);
+            border-radius: 6px;
+            color: var(--apple-text);
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .action-button:hover {
+            border-color: var(--apple-blue);
+            color: var(--apple-blue);
+        }
+        
+        .pipeline-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .info-item {
+            color: var(--apple-text-secondary);
+        }
+        
+        .info-value {
+            color: var(--apple-text);
+            font-weight: 500;
+        }
+        
+        .chart-container {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-lg);
+            padding: 1.5rem;
+            border: 1px solid var(--apple-border);
+            margin-top: 2rem;
+        }
+        
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-button" onclick="window.location.href='/'">
+                <i data-feather="arrow-left" style="width: 16px; height: 16px; margin-right: 4px;"></i>
+                Back to Dashboard
+            </button>
+            <h1 class="header-title">TerraFlow</h1>
+            <p class="header-subtitle">
+                Design, monitor, and manage your ETL data processing pipelines
+            </p>
+        </div>
+        
+        <div class="pipeline-grid">
+            <div class="pipeline-canvas">
+                <div class="pipeline-toolbar">
+                    <button class="toolbar-button active">
+                        <i data-feather="plus" style="width: 16px; height: 16px;"></i>
+                        Add Stage
+                    </button>
+                    <button class="toolbar-button">
+                        <i data-feather="play" style="width: 16px; height: 16px;"></i>
+                        Run Pipeline
+                    </button>
+                    <button class="toolbar-button">
+                        <i data-feather="save" style="width: 16px; height: 16px;"></i>
+                        Save
+                    </button>
+                    <button class="toolbar-button">
+                        <i data-feather="settings" style="width: 16px; height: 16px;"></i>
+                        Configure
+                    </button>
+                </div>
+                
+                <div class="pipeline-flow">
+                    <div class="pipeline-stage" data-stage="ingestion">
+                        <div class="stage-title">Data Ingestion</div>
+                        <div class="stage-description">Connect to SQL Server JCHARRISPACS and extract data</div>
+                        <div class="stage-status">
+                            <span class="status-badge completed">Completed</span>
+                            <i data-feather="database" style="width: 20px; height: 20px;"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="pipeline-stage" data-stage="validation">
+                        <div class="stage-title">Data Validation</div>
+                        <div class="stage-description">Validate data quality and integrity checks</div>
+                        <div class="stage-status">
+                            <span class="status-badge running">Running</span>
+                            <i data-feather="check-circle" style="width: 20px; height: 20px;"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="pipeline-stage" data-stage="transformation">
+                        <div class="stage-title">Data Transformation</div>
+                        <div class="stage-description">Apply spatial transformations and normalization</div>
+                        <div class="stage-status">
+                            <span class="status-badge pending">Pending</span>
+                            <i data-feather="shuffle" style="width: 20px; height: 20px;"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="pipeline-stage" data-stage="loading">
+                        <div class="stage-title">Data Loading</div>
+                        <div class="stage-description">Load processed data into PostgreSQL</div>
+                        <div class="stage-status">
+                            <span class="status-badge pending">Pending</span>
+                            <i data-feather="upload" style="width: 20px; height: 20px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">Pipeline Metrics</h3>
+                    <div class="metric-card">
+                        <div class="metric-label">Records Processed</div>
+                        <div class="metric-value">12,847</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Success Rate</div>
+                        <div class="metric-value">98.5%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Avg Runtime</div>
+                        <div class="metric-value">4.2 min</div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">Recent Activity</h3>
+                    <div style="font-size: 0.875rem; color: var(--apple-text-secondary);">
+                        <div style="margin-bottom: 0.5rem;">✓ Pipeline executed successfully</div>
+                        <div style="margin-bottom: 0.5rem;">⚠ Data validation warning</div>
+                        <div style="margin-bottom: 0.5rem;">✓ 1,024 records processed</div>
+                        <div style="margin-bottom: 0.5rem;">✓ Connection established</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="pipeline-list">
+            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem;">Saved Pipelines</h2>
+            
+            <div class="pipeline-item">
+                <div class="pipeline-header">
+                    <div class="pipeline-name">County Data Sync</div>
+                    <div class="pipeline-actions">
+                        <button class="action-button" title="Run">
+                            <i data-feather="play" style="width: 16px; height: 16px;"></i>
+                        </button>
+                        <button class="action-button" title="Edit">
+                            <i data-feather="edit" style="width: 16px; height: 16px;"></i>
+                        </button>
+                        <button class="action-button" title="Settings">
+                            <i data-feather="settings" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="pipeline-info">
+                    <div class="info-item">
+                        <div>Status:</div>
+                        <div class="info-value">Active</div>
+                    </div>
+                    <div class="info-item">
+                        <div>Last Run:</div>
+                        <div class="info-value">2 hours ago</div>
+                    </div>
+                    <div class="info-item">
+                        <div>Schedule:</div>
+                        <div class="info-value">Daily at 2:00 AM</div>
+                    </div>
+                    <div class="info-item">
+                        <div>Records:</div>
+                        <div class="info-value">12,847</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pipeline-item">
+                <div class="pipeline-header">
+                    <div class="pipeline-name">Spatial Data Processing</div>
+                    <div class="pipeline-actions">
+                        <button class="action-button" title="Run">
+                            <i data-feather="play" style="width: 16px; height: 16px;"></i>
+                        </button>
+                        <button class="action-button" title="Edit">
+                            <i data-feather="edit" style="width: 16px; height: 16px;"></i>
+                        </button>
+                        <button class="action-button" title="Settings">
+                            <i data-feather="settings" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="pipeline-info">
+                    <div class="info-item">
+                        <div>Status:</div>
+                        <div class="info-value">Running</div>
+                    </div>
+                    <div class="info-item">
+                        <div>Last Run:</div>
+                        <div class="info-value">Running now</div>
+                    </div>
+                    <div class="info-item">
+                        <div>Schedule:</div>
+                        <div class="info-value">Manual</div>
+                    </div>
+                    <div class="info-item">
+                        <div>Records:</div>
+                        <div class="info-value">3,421</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h3 class="chart-title">Pipeline Performance</h3>
+            <canvas id="performanceChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+        
+        // Pipeline stage interactions
+        document.querySelectorAll('.pipeline-stage').forEach(stage => {
+            stage.addEventListener('click', () => {
+                const stageType = stage.dataset.stage;
+                alert(`Configure ${stageType} stage`);
+            });
+        });
+        
+        // Toolbar interactions
+        document.querySelectorAll('.toolbar-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active from all buttons
+                document.querySelectorAll('.toolbar-button').forEach(b => b.classList.remove('active'));
+                button.classList.add('active');
+            });
+        });
+        
+        // Performance Chart
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        const performanceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Records Processed',
+                    data: [12000, 15000, 8000, 18000, 12000, 9000, 14000],
+                    borderColor: '#0071e3',
+                    backgroundColor: 'rgba(0, 113, 227, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'Processing Time (min)',
+                    data: [4.2, 5.1, 3.8, 6.2, 4.8, 3.2, 4.9],
+                    borderColor: '#00c853',
+                    backgroundColor: 'rgba(0, 200, 83, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#f5f5f7'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: '#86868b'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        ticks: {
+                            color: '#86868b'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        ticks: {
+                            color: '#86868b'
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraAudit - Data Quality & Compliance</title>
+    
+    <!-- Apple-inspired typography -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --apple-blue: #0071e3;
+            --apple-blue-light: #40a0ff;
+            --apple-blue-dark: #0051a3;
+            --apple-background: #000000;
+            --apple-card: #1d1d1f;
+            --apple-sidebar: #141414;
+            --apple-border: rgba(255, 255, 255, 0.1);
+            --apple-text: #f5f5f7;
+            --apple-text-secondary: #86868b;
+            --apple-text-tertiary: #6e6e73;
+            --apple-green: #00c853;
+            --apple-orange: #ff9500;
+            --apple-red: #ff3b30;
+            --apple-radius-md: 12px;
+            --apple-radius-lg: 20px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background-color: var(--apple-background);
+            color: var(--apple-text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            margin-bottom: 2.5rem;
+        }
+        
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--apple-blue);
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .back-button:hover {
+            background-color: rgba(0, 113, 227, 0.1);
+        }
+        
+        .header-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header-subtitle {
+            font-size: 1.125rem;
+            color: var(--apple-text-secondary);
+            letter-spacing: -0.022em;
+            line-height: 1.4;
+        }
+        
+        .audit-dashboard {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .metric-card {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-md);
+            border: 1px solid var(--apple-border);
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .metric-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .metric-title {
+            font-size: 0.875rem;
+            color: var(--apple-text-secondary);
+            font-weight: 500;
+        }
+        
+        .metric-icon {
+            width: 20px;
+            height: 20px;
+            opacity: 0.7;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-change {
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .metric-change.positive {
+            color: var(--apple-green);
+        }
+        
+        .metric-change.negative {
+            color: var(--apple-red);
+        }
+        
+        .metric-change.neutral {
+            color: var(--apple-text-secondary);
+        }
+        
+        .audit-table-container {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-lg);
+            border: 1px solid var(--apple-border);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--apple-border);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        
+        .table-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .table-filters {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        
+        .filter-select {
+            background: var(--apple-sidebar);
+            border: 1px solid var(--apple-border);
+            border-radius: 6px;
+            color: var(--apple-text);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            outline: none;
+        }
+        
+        .audit-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .audit-table th,
+        .audit-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--apple-border);
+        }
+        
+        .audit-table th {
+            background: var(--apple-sidebar);
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--apple-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .audit-table td {
+            font-size: 0.9375rem;
+        }
+        
+        .audit-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-badge.success {
+            background: rgba(0, 200, 83, 0.2);
+            color: var(--apple-green);
+        }
+        
+        .status-badge.warning {
+            background: rgba(255, 149, 0, 0.2);
+            color: var(--apple-orange);
+        }
+        
+        .status-badge.error {
+            background: rgba(255, 59, 48, 0.2);
+            color: var(--apple-red);
+        }
+        
+        .severity-high {
+            color: var(--apple-red);
+            font-weight: 600;
+        }
+        
+        .severity-medium {
+            color: var(--apple-orange);
+            font-weight: 500;
+        }
+        
+        .severity-low {
+            color: var(--apple-text-secondary);
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .audit-controls {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-lg);
+            border: 1px solid var(--apple-border);
+            padding: 1.5rem;
+        }
+        
+        .controls-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .control-button {
+            width: 100%;
+            background: var(--apple-sidebar);
+            border: 1px solid var(--apple-border);
+            border-radius: 8px;
+            color: var(--apple-text);
+            cursor: pointer;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .control-button:hover {
+            border-color: var(--apple-blue);
+            background: rgba(0, 113, 227, 0.1);
+        }
+        
+        .control-button.primary {
+            background: var(--apple-blue);
+            border-color: var(--apple-blue);
+        }
+        
+        .control-button.primary:hover {
+            background: var(--apple-blue-dark);
+        }
+        
+        .recent-issues {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-lg);
+            border: 1px solid var(--apple-border);
+            padding: 1.5rem;
+        }
+        
+        .issues-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .issue-item {
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            background: var(--apple-sidebar);
+            border-radius: 8px;
+            border-left: 4px solid transparent;
+        }
+        
+        .issue-item.high {
+            border-left-color: var(--apple-red);
+        }
+        
+        .issue-item.medium {
+            border-left-color: var(--apple-orange);
+        }
+        
+        .issue-item.low {
+            border-left-color: var(--apple-text-secondary);
+        }
+        
+        .issue-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .issue-description {
+            font-size: 0.75rem;
+            color: var(--apple-text-secondary);
+            line-height: 1.4;
+        }
+        
+        .compliance-status {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-lg);
+            border: 1px solid var(--apple-border);
+            padding: 1.5rem;
+        }
+        
+        .compliance-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .compliance-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--apple-border);
+        }
+        
+        .compliance-item:last-child {
+            border-bottom: none;
+        }
+        
+        .compliance-label {
+            font-size: 0.875rem;
+        }
+        
+        .compliance-score {
+            font-weight: 600;
+        }
+        
+        .compliance-score.excellent {
+            color: var(--apple-green);
+        }
+        
+        .compliance-score.good {
+            color: var(--apple-blue);
+        }
+        
+        .compliance-score.fair {
+            color: var(--apple-orange);
+        }
+        
+        .compliance-score.poor {
+            color: var(--apple-red);
+        }
+        
+        .chart-section {
+            background-color: var(--apple-card);
+            border-radius: var(--apple-radius-lg);
+            padding: 1.5rem;
+            border: 1px solid var(--apple-border);
+        }
+        
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        
+        @media (max-width: 1024px) {
+            .audit-dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-button" onclick="window.location.href='/'">
+                <i data-feather="arrow-left" style="width: 16px; height: 16px; margin-right: 4px;"></i>
+                Back to Dashboard
+            </button>
+            <h1 class="header-title">TerraAudit</h1>
+            <p class="header-subtitle">
+                Monitor data quality, track changes, and ensure compliance across your geospatial datasets
+            </p>
+        </div>
+        
+        <div class="audit-dashboard">
+            <div class="main-panel">
+                <!-- Key Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Data Quality Score</span>
+                            <i data-feather="check-circle" class="metric-icon"></i>
+                        </div>
+                        <div class="metric-value">94.7%</div>
+                        <div class="metric-change positive">
+                            <i data-feather="trending-up" style="width: 12px; height: 12px;"></i>
+                            +2.1% from last week
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Active Issues</span>
+                            <i data-feather="alert-triangle" class="metric-icon"></i>
+                        </div>
+                        <div class="metric-value">23</div>
+                        <div class="metric-change negative">
+                            <i data-feather="trending-down" style="width: 12px; height: 12px;"></i>
+                            +5 from yesterday
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Records Audited</span>
+                            <i data-feather="database" class="metric-icon"></i>
+                        </div>
+                        <div class="metric-value">847K</div>
+                        <div class="metric-change positive">
+                            <i data-feather="trending-up" style="width: 12px; height: 12px;"></i>
+                            +12% this month
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Compliance Rate</span>
+                            <i data-feather="shield" class="metric-icon"></i>
+                        </div>
+                        <div class="metric-value">98.2%</div>
+                        <div class="metric-change neutral">
+                            <i data-feather="minus" style="width: 12px; height: 12px;"></i>
+                            No change
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Audit Log Table -->
+                <div class="audit-table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">Recent Audit Events</h3>
+                        <div class="table-filters">
+                            <select class="filter-select">
+                                <option>All Types</option>
+                                <option>Data Quality</option>
+                                <option>Security</option>
+                                <option>Compliance</option>
+                            </select>
+                            <select class="filter-select">
+                                <option>Last 24 Hours</option>
+                                <option>Last Week</option>
+                                <option>Last Month</option>
+                            </select>
+                        </div>
+                    </div>
+                    <table class="audit-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Event Type</th>
+                                <th>Resource</th>
+                                <th>User</th>
+                                <th>Status</th>
+                                <th>Severity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2025-06-27 14:23:17</td>
+                                <td>Data Validation</td>
+                                <td>spatial_features</td>
+                                <td>system</td>
+                                <td><span class="status-badge warning">Warning</span></td>
+                                <td><span class="severity-medium">Medium</span></td>
+                            </tr>
+                            <tr>
+                                <td>2025-06-27 14:18:42</td>
+                                <td>User Access</td>
+                                <td>map_tiles</td>
+                                <td>john.doe</td>
+                                <td><span class="status-badge success">Success</span></td>
+                                <td><span class="severity-low">Low</span></td>
+                            </tr>
+                            <tr>
+                                <td>2025-06-27 14:15:33</td>
+                                <td>Data Integrity</td>
+                                <td>property_parcels</td>
+                                <td>system</td>
+                                <td><span class="status-badge error">Error</span></td>
+                                <td><span class="severity-high">High</span></td>
+                            </tr>
+                            <tr>
+                                <td>2025-06-27 14:12:15</td>
+                                <td>ETL Process</td>
+                                <td>county_sync</td>
+                                <td>system</td>
+                                <td><span class="status-badge success">Success</span></td>
+                                <td><span class="severity-low">Low</span></td>
+                            </tr>
+                            <tr>
+                                <td>2025-06-27 14:08:57</td>
+                                <td>Schema Change</td>
+                                <td>audit_logs</td>
+                                <td>admin</td>
+                                <td><span class="status-badge success">Success</span></td>
+                                <td><span class="severity-medium">Medium</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <!-- Audit Controls -->
+                <div class="audit-controls">
+                    <h3 class="controls-title">Audit Controls</h3>
+                    <button class="control-button primary">
+                        <i data-feather="play" style="width: 16px; height: 16px;"></i>
+                        Run Full Audit
+                    </button>
+                    <button class="control-button">
+                        <i data-feather="refresh-cw" style="width: 16px; height: 16px;"></i>
+                        Refresh Data
+                    </button>
+                    <button class="control-button">
+                        <i data-feather="download" style="width: 16px; height: 16px;"></i>
+                        Export Report
+                    </button>
+                    <button class="control-button">
+                        <i data-feather="settings" style="width: 16px; height: 16px;"></i>
+                        Configure Rules
+                    </button>
+                    <button class="control-button">
+                        <i data-feather="bell" style="width: 16px; height: 16px;"></i>
+                        Alert Settings
+                    </button>
+                </div>
+                
+                <!-- Recent Issues -->
+                <div class="recent-issues">
+                    <h3 class="issues-title">Critical Issues</h3>
+                    <div class="issue-item high">
+                        <div class="issue-title">Geometry Validation Failed</div>
+                        <div class="issue-description">147 parcels have invalid polygon geometries</div>
+                    </div>
+                    <div class="issue-item medium">
+                        <div class="issue-title">Missing Attribute Data</div>
+                        <div class="issue-description">23 records missing required property values</div>
+                    </div>
+                    <div class="issue-item medium">
+                        <div class="issue-title">Duplicate Records</div>
+                        <div class="issue-description">12 potential duplicate spatial features detected</div>
+                    </div>
+                    <div class="issue-item low">
+                        <div class="issue-title">Performance Warning</div>
+                        <div class="issue-description">Spatial index optimization recommended</div>
+                    </div>
+                </div>
+                
+                <!-- Compliance Status -->
+                <div class="compliance-status">
+                    <h3 class="compliance-title">Compliance Status</h3>
+                    <div class="compliance-item">
+                        <span class="compliance-label">GDPR Compliance</span>
+                        <span class="compliance-score excellent">99.8%</span>
+                    </div>
+                    <div class="compliance-item">
+                        <span class="compliance-label">Data Retention</span>
+                        <span class="compliance-score good">96.2%</span>
+                    </div>
+                    <div class="compliance-item">
+                        <span class="compliance-label">Access Control</span>
+                        <span class="compliance-score excellent">100%</span>
+                    </div>
+                    <div class="compliance-item">
+                        <span class="compliance-label">Audit Trail</span>
+                        <span class="compliance-score good">94.7%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Section -->
+        <div class="chart-section">
+            <h3 class="chart-title">Audit Trends & Analytics</h3>
+            <canvas id="auditChart" width="400" height="300"></canvas>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+        
+        // Control button interactions
+        document.querySelectorAll('.control-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const action = button.textContent.trim();
+                if (action.includes('Run Full Audit')) {
+                    alert('Starting comprehensive audit scan...');
+                } else if (action.includes('Export Report')) {
+                    alert('Generating audit report...');
+                } else {
+                    alert(`Executing: ${action}`);
+                }
+            });
+        });
+        
+        // Table filter interactions
+        document.querySelectorAll('.filter-select').forEach(select => {
+            select.addEventListener('change', () => {
+                // In a real implementation, this would filter the table data
+                console.log('Filter changed:', select.value);
+            });
+        });
+        
+        // Audit Chart
+        Chart.defaults.color = '#f5f5f7';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+        
+        const auditCtx = document.getElementById('auditChart').getContext('2d');
+        new Chart(auditCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Data Quality Score',
+                    data: [92.1, 93.4, 94.2, 94.7, 93.8, 94.5, 94.7],
+                    borderColor: '#00c853',
+                    backgroundColor: 'rgba(0, 200, 83, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'Issues Detected',
+                    data: [45, 38, 32, 23, 28, 25, 23],
+                    borderColor: '#ff9500',
+                    backgroundColor: 'rgba(255, 149, 0, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }, {
+                    label: 'Compliance Rate',
+                    data: [97.8, 98.1, 98.0, 98.2, 98.2, 98.1, 98.2],
+                    borderColor: '#0071e3',
+                    backgroundColor: 'rgba(0, 113, 227, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#f5f5f7',
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: '#86868b'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        min: 85,
+                        max: 100,
+                        ticks: {
+                            color: '#86868b',
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        min: 0,
+                        max: 50,
+                        ticks: {
+                            color: '#86868b'
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Auto-refresh functionality (simulated)
+        setInterval(() => {
+            // In a real implementation, this would fetch new audit data
+            const timestamp = new Date().toLocaleTimeString();
+            console.log(`Auto-refresh at ${timestamp}`);
+        }, 30000); // 30 seconds
+    </script>
+</body>
+</html>
